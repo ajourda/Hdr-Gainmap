@@ -150,8 +150,9 @@ def open_sdr_image(
     colourspace = get_rgb_colourspace_from_icc_profile(image_pil)
     image_np = np.array(image_pil) / 255
     exif = image_pil.info.get("exif")
+    icc_profile = image_pil.info.get("icc_profile")
 
-    return image_np, colourspace, exif
+    return image_np, colourspace, exif, icc_profile
 
 
 def save_sdr_image(
@@ -269,7 +270,7 @@ def get_hdr_from_sdr_stacking(
 def add_hdr_tag(
     sdr_np_image_linear: np.ndarray,
     hdr_np_image_linear: np.ndarray,
-    size_width_factor: float = 0.05,
+    size_width_factor: float = 0.07,
     marging_factor: float = 0.01,
 ) -> None:
     
@@ -350,14 +351,12 @@ def resize_to_max(
     height, width = img.shape[:2]
     max_value = np.max(img)
 
-    # already ok
     if width_max is None and height_max is None:
         return img
 
     if width <= width_max and height <= height_max:
         return img
 
-    # scale factor
     scale_w = width_max / width if width_max else float("inf")
     scale_h = height_max / height if height_max else float("inf")
 
@@ -372,3 +371,34 @@ def resize_to_max(
         return np.clip(sharpened, 0, max_value)
 
     return sharpen_light(cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA), max_value)
+
+
+def tonemap_sdr_to_hdr(
+    sdr_np_image_linear: np.ndarray,
+    sdr_rgb_profile: colour.RGB_Colourspace,
+) -> np.ndarray:
+    
+    sdr_XYZ = colour.RGB_to_XYZ(
+        RGB=sdr_np_image_linear,
+        colourspace=sdr_rgb_profile,
+    )
+    sdr_xyY = colour.XYZ_to_xyY(sdr_XYZ)
+    sdr_xy = sdr_xyY[..., :2]
+    sdr_Y = sdr_xyY[..., 2]
+
+    offset, power, max_value = 0.18, 2.0, 4.92
+    coef = (max_value - 1) / ((1 - offset) ** power)
+    hdr_Y = np.where(
+        sdr_Y > offset,
+        sdr_Y + np.pow(np.clip(sdr_Y - offset, 0, None), power) * coef,
+        sdr_Y,
+    )
+
+    hdr_xyY = np.dstack((sdr_xy, hdr_Y))
+    hdr_XYZ = colour.xyY_to_XYZ(hdr_xyY)
+    hdr_np_image_linear = colour.XYZ_to_RGB(
+        XYZ=hdr_XYZ,
+        colourspace=sdr_rgb_profile,
+    )
+
+    return hdr_np_image_linear

@@ -1,0 +1,68 @@
+import os
+import sys
+from flask import Flask, render_template, request, send_file, jsonify
+from werkzeug.utils import secure_filename
+import uuid
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_PATH = os.path.join(BASE_DIR, "..", "src")
+sys.path.append(SRC_PATH)
+
+from main import run_sdr_hdr
+from preset import Preset
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app = Flask(__name__)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        sdr_file = request.files.get("sdr")
+        hdr_file = request.files.get("hdr")
+        preset = request.form.get("preset", "default")
+        tag = request.form.get("tag") == "on"
+
+        if not sdr_file or not hdr_file:
+            return "Missing files", 400
+
+        sdr_path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(sdr_file.filename))
+        hdr_path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(hdr_file.filename))
+
+        sdr_file.save(sdr_path)
+        hdr_file.save(hdr_path)
+
+        unique_id = uuid.uuid4().hex[:8]
+
+        name, _ = os.path.splitext(sdr_file.filename)
+        output_filename = f"{name}_hdrgm_{unique_id}.jpg"
+        output_path = os.path.join(app.config["UPLOAD_FOLDER"], output_filename)
+
+        preset_enum = Preset[preset]
+
+        run_sdr_hdr(
+            sdr=sdr_path,
+            hdr=hdr_path,
+            output=output_path,
+            preset=preset_enum,
+            tag=tag,
+            keep_temp_files=False,
+        )
+
+        # 🔥 retourner URL au lieu du fichier direct
+        return jsonify({"image_url": f"/uploads/{output_filename}"})
+
+    return render_template("index.html", presets=[p.name for p in Preset])
+
+
+# 🔥 route pour servir les images
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_file(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

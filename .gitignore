@@ -1,4 +1,6 @@
 venv/
+.venv/
+.vscode/
 __pycache__/
 build/
 dist/
@@ -6,3 +8,4 @@ dist/
 *.pyo
 *.pyd
 *.spec
+*.DS_Store

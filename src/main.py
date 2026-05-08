@@ -14,6 +14,21 @@ def run_sdr_hdr(sdr, hdr, output=None, preset=Preset.default, tag=False, keep_te
     process = SdrHdrToUhdr(
         sdr_path=sdr,
         hdr_path=hdr,
+        hdrgm_path=output,
+        preset=preset,
+        tag=tag,
+        keep_temp_files=keep_temp_files,
+    )
+    process.validate()
+    process.run()
+
+
+def run_sdr_sdr_ev(sdr, sdrev, ev, output=None, preset=Preset.default, tag=False, keep_temp_files=False):
+    from gen.sdr_sdr_ev_to_uhdr import SdrSdrEvToUhdr
+    process = SdrSdrEvToUhdr(
+        sdr_path=sdr,
+        sdr_ev_path=sdrev,
+        ev=ev,
         uhdr_path=output,
         preset=preset,
         tag=tag,
@@ -23,20 +38,7 @@ def run_sdr_hdr(sdr, hdr, output=None, preset=Preset.default, tag=False, keep_te
     process.run()
 
 
-def run_sdr_sdr_ev(sdr, sdrev, ev, output=None, keep_temp_files=False):
-    from gen.sdr_sdr_ev_to_uhdr import SdrSdrEvToUhdr
-    process = SdrSdrEvToUhdr(
-        sdr_path=sdr,
-        sdr_ev_path=sdrev,
-        ev=ev,
-        uhdr_path=output,
-        keep_temp_files=keep_temp_files,
-    )
-    process.validate()
-    process.run()
-
-
-def run_sdr_ev(sdr, ev, output=None, keep_temp_files=False):
+def run_sdr_ev(sdr, ev, output=None, preset=Preset.default, tag=False, keep_temp_files=False):
     from gen.sdr_ev_to_uhdr import SdrToUhdr
     process = SdrToUhdr(
         sdr_path=sdr,
@@ -48,7 +50,20 @@ def run_sdr_ev(sdr, ev, output=None, keep_temp_files=False):
     process.run()
 
 
-def run_dir(dir, keep_temp_files=False):
+def run_sdr_tm(sdr, output=None, preset=Preset.default, tag=False, keep_temp_files=False):
+    from gen.sdr_to_hdrgm import SdrTmToHdrgm
+    process = SdrTmToHdrgm(
+        sdr_path=sdr,
+        hdrgm_path=output,
+        preset=preset,
+        tag=tag,
+        keep_temp_files=keep_temp_files,
+    )
+    process.validate()
+    process.run()
+
+
+def run_dir(dir, preset=Preset.default, tag=False, keep_temp_files=False):
     print(f"Batch mode (sdr + hdr) on directory: {dir}")
     from gen import sdr_hdr_to_uhdr
     sdr_hdr_to_uhdr.process_folder(
@@ -88,20 +103,23 @@ def main(
 
     # sdr + sdr ev mode
     if sdr and sdrev and ev is not None:
-        # TODO: add tag and preset
-        run_sdr_sdr_ev(sdr, sdrev, ev, output, keep_temp_files)
+        run_sdr_sdr_ev(sdr, sdrev, ev, output, preset, tag, keep_temp_files)
         return
 
     # sdr ev mode
     if sdr and ev is not None:
-        # TODO: add tag and preset
-        run_sdr_ev(sdr, ev, output, keep_temp_files)
+        run_sdr_ev(sdr, ev, output, preset, tag, keep_temp_files)
+        return
+    
+    # sdr tonemap mode
+    if sdr is not None:
+        run_sdr_tm(sdr, output, preset, tag, keep_temp_files)
         return
     
     # Batch mode
     if dir:
         # TODO: add tag and preset
-        run_dir(dir, keep_temp_files)  
+        run_dir(dir, preset, tag, keep_temp_files)  
         return
 
     # else
@@ -121,4 +139,25 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         sys.argv.append("--help")
 
-    app()
+    argsd = [
+        "--dir", "/Users/jb/Desktop/export",
+        "-k"
+    ]
+    argsd = [
+        "--sdr", "/Users/jb/Desktop/export/DSCF9554.jpg",
+        "--ev", 2,
+        "-k",
+    ]
+    argsd = [
+        "--sdr", "/Users/jb/Desktop/export/DSCF9552.jpg",
+        "--hdr", "/Users/jb/Desktop/export/DSCF9552.avif",
+        #"-k",
+        "-p", "insta",
+        #"--tag",
+    ]
+    argsd = [
+        "--sdr", "/Users/jb/Desktop/export/DSCF9554.jpg",
+        "-k",
+    ]
+
+    app(argsd)

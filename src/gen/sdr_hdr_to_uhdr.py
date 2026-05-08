@@ -1,8 +1,8 @@
 import os
-from uhdr.uhdr import UltraHdr
 from preset import Preset
 from image import image_tools
-from image.image_settings import PRESETS
+from image.image_settings import IMAGE_SETTINGS
+from hdrgm.hdrgm import create_hdrgm
 
 
 class SdrHdrToUhdr:
@@ -11,22 +11,23 @@ class SdrHdrToUhdr:
         self,
         sdr_path: str,
         hdr_path: str,
-        uhdr_path: str | None = None,
+        hdrgm_path: str | None = None,
         preset: str = Preset.default,
         tag: bool = False,
         keep_temp_files: bool = False,
     ) -> None:
         self.sdr_path = sdr_path
         self.hdr_path = hdr_path
-        self.uhdr_path = uhdr_path
-        self.settings = PRESETS[preset]
+        self.hdrgm_path = hdrgm_path
+        self.preset = preset
+        self.settings = IMAGE_SETTINGS[preset]
         self.tag = tag
         self.keep_temp_files = keep_temp_files
         self.sdr_changed = False
 
     def run(self) -> None:
         # load images
-        sdr_np_image, sdr_rgb_profile, sdr_exif = image_tools.open_sdr_image(self.sdr_path)
+        sdr_np_image, sdr_rgb_profile, sdr_exif, sdr_icc = image_tools.open_sdr_image(self.sdr_path)
         hdr_np_image, hdr_rgb_profile = image_tools.open_hdr_avif_image(self.hdr_path)
 
         # check sizes consistency
@@ -46,7 +47,7 @@ class SdrHdrToUhdr:
                 max_ratio=self.settings.max_ratio_w_h,
             )
             self.sdr_changed = True
-        
+
         # resize to respect max size if needed
         if self.settings.width_max or self.settings.height_max:
             sdr_np_image = image_tools.resize_to_max(
@@ -87,8 +88,9 @@ class SdrHdrToUhdr:
                 hdr_np_image_linear=hdr_np_image_linear,
             )
             self.sdr_changed = True
-        
+
         # save new sdr if needed
+        # TODO: remove unused image
         sdr_path = self.sdr_path
         if self.sdr_changed:
             base_path, _ = os.path.splitext(self.sdr_path)
@@ -100,22 +102,24 @@ class SdrHdrToUhdr:
                 exif=sdr_exif,
             )
 
-        # create uhdr image
-        if not self.uhdr_path:
+        # output path definition
+        if not self.hdrgm_path:
             base_path, _ = os.path.splitext(self.sdr_path)
-            self.uhdr_path = f"{base_path}_uhdr.jpg"
-        ultra_hdr = UltraHdr(
-            linear_sdr_image=sdr_np_image_linear,
-            linear_hdr_image=hdr_np_image_linear,
-            input_sdr_path=sdr_path,
-            output_uhdr_path=self.uhdr_path,
-            settings=self.settings.uhdr_settings,
+            self.hdrgm_path = f"{base_path}_hdrgm.jpg"
+
+        # create hdr gainmap
+        create_hdrgm(
+            sdr_np_image_linear=sdr_np_image_linear,
+            hdr_np_image_linear=hdr_np_image_linear,
+            sdr_rgb_profile=sdr_rgb_profile,
+            sdr_icc_bytes=sdr_icc,
+            output_path=self.hdrgm_path,
+            preset=self.preset,
             keep_temp_files=self.keep_temp_files,
         )
-        ultra_hdr.run()
-
+        
         # delete temp file if needed
-        if self.tag and not self.keep_temp_files:
+        if self.sdr_changed and not self.keep_temp_files:
             os.remove(sdr_path)
 
     def validate(self) -> None:
