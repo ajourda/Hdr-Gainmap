@@ -6,13 +6,17 @@ Generate HDR images (jpeg + Gain Map) optimized for SDR and HDR displays.
 Overview
 -----------
 
-This project is a Python tool that creates Ultra HDR images by combining SDR and HDR sources into a single JPEG file with a gain map.
+This project is a Python tool for generating HDR Gainmap images in JPEG format, with several workflows available:
+- Combine an SDR image with a true HDR image
+- Combine an SDR image with an underexposed SDR image
+- Generate HDR from a tone-mapped SDR image
+- Create a pseudo-HDR image from a brighter SDR source
 
-This ensures:
+Key features:
 
-- ✅ Optimal rendering on SDR screens
-- ✅ Enhanced brightness and contrast on HDR displays
-- ✅ Compatibility with platforms like Instagram
+- Optimized rendering on both SDR and HDR displays
+- Improved brightness, contrast, and visual impact on HDR screens
+- Built-in presets for better compatibility with platforms such as Instagram
 
 Quick Start
 ------------------
@@ -28,25 +32,12 @@ Quick Start
    pip install -r requirements.txt
 ```
 
-<h3>Install UltraHDR library</h3>
-
-- macOS:
-
-```
-brew install libultrahdr
-```
-
-- Windows:
-
-Install from https://github.com/google/libultrahdr <br>
-Add 'ultrahdr_app' to the PATH
-
 Usage
 --------
 
-<h3>SDR + HDR → UltraHDR (✅ Recommended)</h3>
+<h3>SDR + native HDR → HDR Gainmap (✅ Recommended)</h3>
 
-Combine SDR image (jpg) and HDR image (avif)
+Combine SDR image (jpg) and native HDR image (avif)
 
 ```
 main.py --sdr input_sdr.jpg --hdr input_hdr.avif -o output_uhdr_1.jpg
@@ -80,7 +71,7 @@ image.avif
 
 ---
 
-<h3>SDR + SDR -xEV → UltraHDR</h3>
+<h3>SDR + under-exposed SDR → HDR Gainmap</h3>
 
 Combine SDR image and SDR underexposed image (with EV value)
 
@@ -103,7 +94,28 @@ main.py --sdr input_sdr.jpg --sdrev input_sdr_2ev.avif --ev 2 -o output_uhdr_2.j
 
 ---
 
-<h3>SDR boosted EV → UltraHDR</h3>
+<h3>Tone-mapped SDR → Hdr Gainmap</h3>
+
+Increase brighter part of SDR image to create a HDR version
+
+```
+main.py --sdr input_sdr.jpg --ev 2 -o output_uhdr_4.jpg
+```
+
+<table>
+  <tr>
+    <td><b>SDR image</b></br><small>input_sdr.jpg</small></td>
+    <td><b>HDR image with gain map</b></br><small>output_uhdr_4.jpg</small></td>
+  </tr>
+  <tr>
+    <td><img src="samples/input_sdr.jpg" width="250"/></td>
+    <td><img src="samples/output_uhdr_4.jpg" width="250"/></td>
+  </tr>
+</table>
+
+---
+
+<h3>SDR boosted → Hdr Gainmap</h3>
 
 Generate HDR from one SDR image with exposure compensation
 
@@ -148,4 +160,4 @@ Recommended Lightroom Export Settings
 📄 License
 ----------
 
-MIT
+Apache-2.0 license
