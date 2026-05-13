@@ -25,7 +25,7 @@ class SdrTmToHdrgm:
 
     def run(self) -> None:
         # load image
-        sdr_np_image, sdr_rgb_profile, _, sdr_icc = image_tools.open_sdr_image(self.sdr_path)
+        sdr_np_image, sdr_rgb_profile, sdr_exif_bytes, sdr_icc_bytes = image_tools.open_sdr_image(self.sdr_path)
 
         # crop to respect ratio if needed
         if self.settings.min_ratio_w_h or self.settings.max_ratio_w_h:
@@ -75,11 +75,23 @@ class SdrTmToHdrgm:
             sdr_np_image_linear=sdr_np_image_linear,
             hdr_np_image_linear=hdr_np_image_linear,
             sdr_rgb_profile=sdr_rgb_profile,
-            sdr_icc_bytes=sdr_icc,
+            sdr_icc_bytes=sdr_icc_bytes,
             output_path=self.hdrgm_path,
             preset=self.preset,
             keep_temp_files=self.keep_temp_files,
         )
+
+        # create temp file if asked
+        if self.sdr_changed and self.keep_temp_files:
+            base_path, _ = os.path.splitext(self.sdr_path)
+            sdr_path = f"{base_path}_temp.jpg"
+            image_tools.save_sdr_image(
+                sdr_np_image_linear=sdr_np_image_linear,
+                rgb_profile=sdr_rgb_profile,
+                sdr_path=sdr_path,
+                exif_bytes=sdr_exif_bytes,
+                icc_bytes=sdr_icc_bytes,
+            )
 
     def validate(self) -> None:
         if not os.path.isfile(self.sdr_path):

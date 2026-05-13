@@ -29,7 +29,7 @@ def run_sdr_sdr_ev(sdr, sdrev, ev, output=None, preset=Preset.default, tag=False
         sdr_path=sdr,
         sdr_ev_path=sdrev,
         ev=ev,
-        uhdr_path=output,
+        hdrgm_path=output,
         preset=preset,
         tag=tag,
         keep_temp_files=keep_temp_files,
@@ -43,7 +43,9 @@ def run_sdr_ev(sdr, ev, output=None, preset=Preset.default, tag=False, keep_temp
     process = SdrToUhdr(
         sdr_path=sdr,
         ev=ev,
-        uhdr_path=output,
+        hdrgm_path=output,
+        preset=preset,
+        tag=tag,
         keep_temp_files=keep_temp_files,
     )
     process.validate()
@@ -118,7 +120,6 @@ def main(
     
     # Batch mode
     if dir:
-        # TODO: add tag and preset
         run_dir(dir, preset, tag, keep_temp_files)  
         return
 
@@ -139,25 +140,4 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         sys.argv.append("--help")
 
-    argsd = [
-        "--dir", "/Users/jb/Desktop/export",
-        "-k"
-    ]
-    argsd = [
-        "--sdr", "/Users/jb/Desktop/export/DSCF9554.jpg",
-        "--ev", 2,
-        "-k",
-    ]
-    argsd = [
-        "--sdr", "/Users/jb/Desktop/export/DSCF9552.jpg",
-        "--hdr", "/Users/jb/Desktop/export/DSCF9552.avif",
-        #"-k",
-        "-p", "insta",
-        #"--tag",
-    ]
-    argsd = [
-        "--sdr", "/Users/jb/Desktop/export/DSCF9554.jpg",
-        "-k",
-    ]
-
-    app(argsd)
+    app()

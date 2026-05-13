@@ -160,22 +160,24 @@ def save_sdr_image(
     rgb_profile: colour.RGB_Colourspace,
     sdr_path: str,
     quality: int = 95,
-    exif: bytes = None,
+    exif_bytes: bytes | None = None,
+    icc_bytes: bytes | None = None,
 ) -> None:
     sdr_np_image = rgb_profile.cctf_encoding(sdr_np_image_linear)
     sdr_np_image = (sdr_np_image * 255).astype(np.uint8)
     sdr_np_image = np.clip(sdr_np_image, 0, 255)
     image = Image.fromarray(sdr_np_image, mode='RGB')
 
-    icc_path = ICC.get(rgb_profile.name)
-    if not icc_path or not os.path.isfile(icc_path):
-        raise FileNotFoundError(f"Icc profile {rgb_profile.name} not found")
-    icc_data = ImageCms.getOpenProfile(icc_path)
+    if not icc_bytes:
+        icc_path = ICC.get(rgb_profile.name)
+        if not icc_path or not os.path.isfile(icc_path):
+            raise FileNotFoundError(f"Icc profile {rgb_profile.name} not found")
+        icc_bytes = ImageCms.getOpenProfile(icc_path).tobytes()
 
-    if exif:
-        image.save(sdr_path, quality=quality, icc_profile=icc_data.tobytes(), exif=exif)
+    if exif_bytes:
+        image.save(sdr_path, quality=quality, icc_profile=icc_bytes, exif=exif_bytes)
     else:
-        image.save(sdr_path, quality=quality, icc_profile=icc_data.tobytes())
+        image.save(sdr_path, quality=quality, icc_profile=icc_bytes)
 
 
 def get_linear_image(
