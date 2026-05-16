@@ -5,7 +5,6 @@ import cv2
 from uhdr.uhdr_metadata import UhdrMetadata
 from uhdr.uhdr_settings import UhdrSettings
 
-
 ULTRAHDR_APP = r"ultrahdr_app"
 
 
@@ -34,7 +33,7 @@ class UltraHdr:
         self.metadata_path = f"{base_path}_metadata.cfg"
         if not self.uhdr_path:
             self.uhdr_path = f"{base_path}_uhdr.jpg"
-    
+
     def run(self) -> None:
         # process gain map
         gainmap_np_image, min_map, max_map = UltraHdr.get_gainmap(
@@ -52,12 +51,12 @@ class UltraHdr:
             quality=self.settings.gain_map_quality,
             size_factor=self.settings.gain_map_size_factor,
         )
-        
+
         # create metadata file
         self.metadata.min_content_boost = min_map
         self.metadata.max_content_boost = max_map
         if self.settings.forced_max_hdr_capacity:
-            self.metadata.max_hdr_capacity = self.settings.forced_max_hdr_capacity 
+            self.metadata.max_hdr_capacity = self.settings.forced_max_hdr_capacity
         UltraHdr.create_metadata(
             metadata=self.metadata,
             metadata_path=self.metadata_path,
@@ -95,7 +94,9 @@ class UltraHdr:
         if not metadata.is_valid():
             raise ValueError("Metadata is not valid.")
 
-        used_max_hdr_capacity = max(min(metadata.max_hdr_capacity, metadata.max_content_boost), 1.1)
+        used_max_hdr_capacity = max(
+            min(metadata.max_hdr_capacity, metadata.max_content_boost), 1.1
+        )
 
         content_lines = [
             f"--minContentBoost {metadata.min_content_boost:.3f}",
@@ -110,7 +111,7 @@ class UltraHdr:
         content = "\n".join(content_lines)
 
         try:
-            with open(metadata_path, 'w', encoding='utf-8') as file:
+            with open(metadata_path, "w", encoding="utf-8") as file:
                 file.write(content)
         except IOError as e:
             raise IOError(f"Failed to write metadata file: {e}")
@@ -121,7 +122,7 @@ class UltraHdr:
         hdr_np_image_linear: np.ndarray,
         metadata: UhdrMetadata,
         min_gain: float = 0.8,
-        max_gain: float = 10000/203,
+        max_gain: float = 10000 / 203,
     ) -> tuple[np.ndarray, float, float]:
         """
         Get Ultra HDR gainmap from linear SDR and HDR images.
@@ -142,7 +143,9 @@ class UltraHdr:
         if sdr_np_image_linear.shape != hdr_np_image_linear.shape:
             raise ValueError("SDR and HDR images must have the same shape.")
 
-        gain = (hdr_np_image_linear + metadata.hdr_offset) / (sdr_np_image_linear + metadata.sdr_offset)
+        gain = (hdr_np_image_linear + metadata.hdr_offset) / (
+            sdr_np_image_linear + metadata.sdr_offset
+        )
 
         gain = UltraHdr.get_optimized_gain(gain)
 
@@ -178,7 +181,9 @@ class UltraHdr:
         p_high = np.percentile(max_rgb, percentile)
         gmax = max_rgb.max()
 
-        print(f"optim param -> max: {gmax:.2f} | p_low: {p_low:.2f} | p_high: {p_high:.2f}")
+        print(
+            f"optim param -> max: {gmax:.2f} | p_low: {p_low:.2f} | p_high: {p_high:.2f}"
+        )
 
         eps = 1e-8
         scale = (p_high - p_low) / (gmax - p_low + eps)
@@ -214,7 +219,9 @@ class UltraHdr:
         try:
             if size_factor != 1:
                 height, width = gainmap.shape[:2]
-                gainmap = cv2.resize(gainmap, (width // size_factor, height // size_factor))
+                gainmap = cv2.resize(
+                    gainmap, (width // size_factor, height // size_factor)
+                )
             success = cv2.imwrite(
                 gainmap_path,
                 cv2.cvtColor(gainmap, cv2.COLOR_RGB2BGR),
@@ -261,11 +268,16 @@ class UltraHdr:
         uhdr_path = output_uhdr_path or f"{os.path.splitext(sdr_path)[0]}_uhdr.jpg"
         command = [
             ULTRAHDR_APP,
-            "-m", "0",
-            "-i", sdr_path,
-            "-g", gainmap_path,
-            "-f", metadata_path,
-            "-z", uhdr_path,
+            "-m",
+            "0",
+            "-i",
+            sdr_path,
+            "-g",
+            gainmap_path,
+            "-f",
+            metadata_path,
+            "-z",
+            uhdr_path,
         ]
 
         try:
@@ -311,7 +323,7 @@ class UltraHdr:
             gainmap=gainmap_np_image,
             gainmap_path=gainmap_path,
         )
-        
+
         # create metadata file
         metadata.min_content_boost = min_map
         metadata.max_content_boost = max_map

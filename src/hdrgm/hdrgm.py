@@ -7,6 +7,9 @@ from hdrconv.io import write_21496
 from preset import Preset
 from hdrgm.hdrgm_settings import HdrgmSettings, HDRGM_SETTINGS
 
+DEFAULT_OFFSET = 1 / 64
+DEFAULT_GAMMA = 1.0
+
 
 def get_optimized_gain(
     gain: np.ndarray,
@@ -61,11 +64,9 @@ def get_gainmap(
         min_gain_ev: Minimum EV per channel.
         max_gain_ev: Maximum EV per channel.
     """
-    gamma = 1.0
-    sdr_offset = 1/64
-    hdr_offset = 1/64
-
-    gain = (hdr_np_image_linear + hdr_offset) / (sdr_np_image_linear + sdr_offset)
+    gain = (hdr_np_image_linear + DEFAULT_OFFSET) / (
+        sdr_np_image_linear + DEFAULT_OFFSET
+    )
     gain = get_optimized_gain(gain)
     gain_ev = np.log2(gain)
 
@@ -84,7 +85,7 @@ def get_gainmap(
         max_val = np.max(gain_ev)
         min_gain_ev_np = np.array([min_val, min_val, min_val])
         max_gain_ev_np = np.array([max_val, max_val, max_val])
-    
+
     min_gain_ev_np = np.maximum(min_gain_ev_np, hdrgm_settings.min_gain_ev)
     max_gain_ev_np = np.minimum(max_gain_ev_np, hdrgm_settings.max_gain_ev)
 
@@ -93,7 +94,7 @@ def get_gainmap(
 
     gain_ev_norm = (gain_ev - min_gain_ev) / (max_gain_ev - min_gain_ev)
     gain_ev_norm = np.clip(gain_ev_norm, 0.0, 1.0)
-    gain_ev_norm = np.power(gain_ev_norm, gamma)
+    gain_ev_norm = np.power(gain_ev_norm, DEFAULT_GAMMA)
     gainmap = np.round(gain_ev_norm * 255).astype(np.uint8)
 
     min_gain_ev = tuple(min_gain_ev_np.tolist())
@@ -133,9 +134,9 @@ def get_metadata(
         use_base_colour_space=True,
         gainmap_min=min_gain_ev,
         gainmap_max=max_gain_ev,
-        gainmap_gamma=(1.0, 1.0, 1.0),
-        baseline_offset=(1/64, 1/64, 1/64),
-        alternate_offset=(1/64, 1/64, 1/64),
+        gainmap_gamma=(DEFAULT_GAMMA, DEFAULT_GAMMA, DEFAULT_GAMMA),
+        baseline_offset=(DEFAULT_OFFSET, DEFAULT_OFFSET, DEFAULT_OFFSET),
+        alternate_offset=(DEFAULT_OFFSET, DEFAULT_OFFSET, DEFAULT_OFFSET),
     )
 
 

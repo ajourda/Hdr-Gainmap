@@ -15,17 +15,17 @@ class ImageSettings:
 IMAGE_SETTINGS = {
     Preset.default: ImageSettings(),
     Preset.best: ImageSettings(
-        quality = 100,
+        quality=100,
     ),
     Preset.light: ImageSettings(
-        quality = 80,
+        quality=80,
     ),
     Preset.insta: ImageSettings(
-        min_ratio_w_h = 0.8,
-        max_ratio_w_h = 1.91,
-        width_max = 1080,
-        height_max = 1350,
-        quality = 100,
-        output_rgb_profile = "Display P3",
+        min_ratio_w_h=0.8,
+        max_ratio_w_h=1.91,
+        width_max=1080,
+        height_max=1350,
+        quality=100,
+        output_rgb_profile="Display P3",
     ),
 }

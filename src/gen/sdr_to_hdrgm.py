@@ -25,7 +25,9 @@ class SdrTmToHdrgm:
 
     def run(self) -> None:
         # load image
-        sdr_np_image, sdr_rgb_profile, sdr_exif_bytes, sdr_icc_bytes = image_tools.open_sdr_image(self.sdr_path)
+        sdr_np_image, sdr_rgb_profile, sdr_exif_bytes, sdr_icc_bytes = (
+            image_tools.open_sdr_image(self.sdr_path)
+        )
 
         # crop to respect ratio if needed
         if self.settings.min_ratio_w_h or self.settings.max_ratio_w_h:

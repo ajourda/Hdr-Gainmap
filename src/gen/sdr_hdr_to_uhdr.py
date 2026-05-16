@@ -27,12 +27,14 @@ class SdrHdrToUhdr:
 
     def run(self) -> None:
         # load images
-        sdr_np_image, sdr_rgb_profile, sdr_exif_bytes, sdr_icc_bytes = image_tools.open_sdr_image(self.sdr_path)
+        sdr_np_image, sdr_rgb_profile, sdr_exif_bytes, sdr_icc_bytes = (
+            image_tools.open_sdr_image(self.sdr_path)
+        )
         hdr_np_image, hdr_rgb_profile = image_tools.open_hdr_avif_image(self.hdr_path)
 
         # check sizes consistency
         if sdr_np_image.shape[:2] != hdr_np_image.shape[:2]:
-            raise("Sdr and Hdr image sizes are not identical")
+            raise ("Sdr and Hdr image sizes are not identical")
 
         # crop to respect ratio if needed
         if self.settings.min_ratio_w_h or self.settings.max_ratio_w_h:
@@ -104,7 +106,7 @@ class SdrHdrToUhdr:
             preset=self.preset,
             keep_temp_files=self.keep_temp_files,
         )
-        
+
         # create temp file if asked
         if self.sdr_changed and self.keep_temp_files:
             base_path, _ = os.path.splitext(self.sdr_path)
@@ -146,7 +148,7 @@ def process_folder(
     if not os.path.isdir(input_directory):
         raise FileNotFoundError(f"Directory does not exist: {input_directory}")
 
-    file_list= os.listdir(input_directory)
+    file_list = os.listdir(input_directory)
 
     for filename in file_list:
         base_name, file_extension = os.path.splitext(filename)
@@ -156,7 +158,9 @@ def process_folder(
             continue
 
         if file_extension.lower() == ".jpg":
-            corresponding_avif_filepath = os.path.join(input_directory, f"{base_name}.avif")
+            corresponding_avif_filepath = os.path.join(
+                input_directory, f"{base_name}.avif"
+            )
 
             if os.path.isfile(corresponding_avif_filepath):
                 print(f"Processing file: {filename}")

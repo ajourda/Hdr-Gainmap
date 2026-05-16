@@ -29,8 +29,12 @@ def index():
         if not sdr_file or not hdr_file:
             return "Missing files", 400
 
-        sdr_path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(sdr_file.filename))
-        hdr_path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(hdr_file.filename))
+        sdr_path = os.path.join(
+            app.config["UPLOAD_FOLDER"], secure_filename(sdr_file.filename)
+        )
+        hdr_path = os.path.join(
+            app.config["UPLOAD_FOLDER"], secure_filename(hdr_file.filename)
+        )
 
         sdr_file.save(sdr_path)
         hdr_file.save(hdr_path)
@@ -52,13 +56,11 @@ def index():
             keep_temp_files=False,
         )
 
-        # 🔥 retourner URL au lieu du fichier direct
         return jsonify({"image_url": f"/uploads/{output_filename}"})
 
     return render_template("index.html", presets=[p.name for p in Preset])
 
 
-# 🔥 route pour servir les images
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_file(os.path.join(app.config["UPLOAD_FOLDER"], filename))

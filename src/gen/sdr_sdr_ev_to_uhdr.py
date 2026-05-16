@@ -4,6 +4,7 @@ from image import image_tools
 from image.image_settings import IMAGE_SETTINGS
 from hdrgm.hdrgm import create_hdrgm
 
+
 class SdrSdrEvToUhdr:
 
     def __init__(
@@ -28,12 +29,16 @@ class SdrSdrEvToUhdr:
 
     def run(self) -> None:
         # load images
-        sdr_np_image, sdr_rgb_profile, sdr_exif_bytes, sdr_icc_bytes = image_tools.open_sdr_image(self.sdr_path)
-        sdr_ev_np_image, sdr_ev_rgb_profile, _, _ = image_tools.open_sdr_image(self.sdr_ev_path)
+        sdr_np_image, sdr_rgb_profile, sdr_exif_bytes, sdr_icc_bytes = (
+            image_tools.open_sdr_image(self.sdr_path)
+        )
+        sdr_ev_np_image, sdr_ev_rgb_profile, _, _ = image_tools.open_sdr_image(
+            self.sdr_ev_path
+        )
 
         # check sizes consistency
         if sdr_np_image.shape[:2] != sdr_ev_np_image.shape[:2]:
-            raise("Sdr and SdrEv image sizes are not identical")
+            raise ("Sdr and SdrEv image sizes are not identical")
 
         # crop to respect ratio if needed
         if self.settings.min_ratio_w_h or self.settings.max_ratio_w_h:
@@ -105,7 +110,7 @@ class SdrSdrEvToUhdr:
             preset=self.preset,
             keep_temp_files=self.keep_temp_files,
         )
-        
+
         # create temp file if asked
         if self.sdr_changed and self.keep_temp_files:
             base_path, _ = os.path.splitext(self.sdr_path)

@@ -1,7 +1,6 @@
 import typer
 from preset import Preset
 
-
 app = typer.Typer(
     add_completion=False,
     help="Convert SDR + HDR images to HDR with Gain Map (UltraHDR)",
@@ -9,12 +8,20 @@ app = typer.Typer(
 )
 
 
-def run_sdr_hdr(sdr, hdr, output=None, preset=Preset.default, tag=False, keep_temp_files=False):
+def run_sdr_hdr(
+    sdr_path: str,
+    hdr_path: str,
+    output_path: str | None = None,
+    preset: Preset = Preset.default,
+    tag: bool = False,
+    keep_temp_files: bool = False,
+):
     from gen.sdr_hdr_to_uhdr import SdrHdrToUhdr
+
     process = SdrHdrToUhdr(
-        sdr_path=sdr,
-        hdr_path=hdr,
-        hdrgm_path=output,
+        sdr_path=sdr_path,
+        hdr_path=hdr_path,
+        hdrgm_path=output_path,
         preset=preset,
         tag=tag,
         keep_temp_files=keep_temp_files,
@@ -23,13 +30,22 @@ def run_sdr_hdr(sdr, hdr, output=None, preset=Preset.default, tag=False, keep_te
     process.run()
 
 
-def run_sdr_sdr_ev(sdr, sdrev, ev, output=None, preset=Preset.default, tag=False, keep_temp_files=False):
+def run_sdr_sdr_ev(
+    sdr_path: str,
+    sdrev_path: str,
+    ev: float,
+    output_path: str | None = None,
+    preset: Preset = Preset.default,
+    tag: bool = False,
+    keep_temp_files: bool = False,
+):
     from gen.sdr_sdr_ev_to_uhdr import SdrSdrEvToUhdr
+
     process = SdrSdrEvToUhdr(
-        sdr_path=sdr,
-        sdr_ev_path=sdrev,
+        sdr_path=sdr_path,
+        sdr_ev_path=sdrev_path,
         ev=ev,
-        hdrgm_path=output,
+        hdrgm_path=output_path,
         preset=preset,
         tag=tag,
         keep_temp_files=keep_temp_files,
@@ -38,12 +54,20 @@ def run_sdr_sdr_ev(sdr, sdrev, ev, output=None, preset=Preset.default, tag=False
     process.run()
 
 
-def run_sdr_ev(sdr, ev, output=None, preset=Preset.default, tag=False, keep_temp_files=False):
+def run_sdr_ev(
+    sdr_path: str,
+    ev: float,
+    output_path: str | None = None,
+    preset: Preset = Preset.default,
+    tag: bool = False,
+    keep_temp_files: bool = False,
+):
     from gen.sdr_ev_to_uhdr import SdrToUhdr
+
     process = SdrToUhdr(
-        sdr_path=sdr,
+        sdr_path=sdr_path,
         ev=ev,
-        hdrgm_path=output,
+        hdrgm_path=output_path,
         preset=preset,
         tag=tag,
         keep_temp_files=keep_temp_files,
@@ -52,11 +76,18 @@ def run_sdr_ev(sdr, ev, output=None, preset=Preset.default, tag=False, keep_temp
     process.run()
 
 
-def run_sdr_tm(sdr, output=None, preset=Preset.default, tag=False, keep_temp_files=False):
+def run_sdr_tm(
+    sdr_path: str,
+    output_path: str | None = None,
+    preset: Preset = Preset.default,
+    tag: bool = False,
+    keep_temp_files: bool = False,
+):
     from gen.sdr_to_hdrgm import SdrTmToHdrgm
+
     process = SdrTmToHdrgm(
-        sdr_path=sdr,
-        hdrgm_path=output,
+        sdr_path=sdr_path,
+        hdrgm_path=output_path,
         preset=preset,
         tag=tag,
         keep_temp_files=keep_temp_files,
@@ -68,6 +99,7 @@ def run_sdr_tm(sdr, output=None, preset=Preset.default, tag=False, keep_temp_fil
 def run_dir(dir, preset=Preset.default, tag=False, keep_temp_files=False):
     print(f"Batch mode (sdr + hdr) on directory: {dir}")
     from gen import sdr_hdr_to_uhdr
+
     sdr_hdr_to_uhdr.process_folder(
         input_directory=dir,
         keep_temp_files=keep_temp_files,
@@ -78,13 +110,23 @@ def run_dir(dir, preset=Preset.default, tag=False, keep_temp_files=False):
 def main(
     sdr: str = typer.Option(None, "--sdr", "-s", help="Path to sdr image (.jpg)"),
     hdr: str = typer.Option(None, "--hdr", "-H", help="Path to hdr image (.avif)"),
-    sdrev: str = typer.Option(None, "--sdrev", "-se", help="Path to sdr image with ev (.jpg)"),
+    sdrev: str = typer.Option(
+        None, "--sdrev", "-se", help="Path to sdr image with ev (.jpg)"
+    ),
     ev: float = typer.Option(None, "--ev", "-e", help="EV value (ex: 2)", min=0, max=4),
-    output: str = typer.Option(None, "--output", "-o", help="Path to output image (.jpg)"),
-    preset: Preset = typer.Option(Preset.default, "--preset", "-p", help="Preset for process"),
+    output: str = typer.Option(
+        None, "--output", "-o", help="Path to output image (.jpg)"
+    ),
+    preset: Preset = typer.Option(
+        Preset.default, "--preset", "-p", help="Preset for process"
+    ),
     tag: bool = typer.Option(False, "--tag", "-t", help="Add hdr tag on image"),
-    keep_temp_files: bool = typer.Option(False, "--keep-temp-files", "-k", help="Keep gain map and metadata"),
-    dir: str = typer.Option(None, "--dir", "-d", help="Dir path to process (sdr + hdr)"),
+    keep_temp_files: bool = typer.Option(
+        False, "--keep-temp-files", "-k", help="Keep gain map and metadata"
+    ),
+    dir: str = typer.Option(
+        None, "--dir", "-d", help="Dir path to process (sdr + hdr)"
+    ),
 ):
     """
     Convert SDR/HDR images to Ultra HDR (Gain Map).
@@ -112,15 +154,15 @@ def main(
     if sdr and ev is not None:
         run_sdr_ev(sdr, ev, output, preset, tag, keep_temp_files)
         return
-    
+
     # sdr tonemap mode
     if sdr is not None:
         run_sdr_tm(sdr, output, preset, tag, keep_temp_files)
         return
-    
+
     # Batch mode
     if dir:
-        run_dir(dir, preset, tag, keep_temp_files)  
+        run_dir(dir, preset, tag, keep_temp_files)
         return
 
     # else
@@ -134,7 +176,7 @@ def main(
     )
 
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     import sys
 
     if len(sys.argv) == 1:
