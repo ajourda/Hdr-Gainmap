@@ -10,3 +10,4 @@ dist/
 *.spec
 *.DS_Store
 uploads/
+.idea/

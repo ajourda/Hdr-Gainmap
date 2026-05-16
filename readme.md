@@ -24,12 +24,11 @@ Quick Start
 ```
    git clone https://github.com/jb-jrdn/Hdr-Gainmap
    cd Hdr-Gainmap
+   uv python install 3.13       # If python is >=3.14
+   uv sync
 
-   python3 -m venv venv
-   source venv/bin/activate    # macOS / Linux
-   # venv\Scripts\activate     # Windows PowerShell
-
-   pip install -r requirements.txt
+   source .venv/bin/activate    # macOS / Linux
+   # .venv\Scripts\activate     # Windows PowerShell
 ```
 
 Usage
@@ -40,7 +39,7 @@ Usage
 Combine SDR image (jpg) and native HDR image (avif)
 
 ```
-main.py --sdr input_sdr.jpg --hdr input_hdr.avif -o output_uhdr_1.jpg
+hdr-gainmap --sdr input_sdr.jpg --hdr input_hdr.avif -o output_uhdr_1.jpg
 ```
 
 <table>
@@ -59,7 +58,7 @@ main.py --sdr input_sdr.jpg --hdr input_hdr.avif -o output_uhdr_1.jpg
 <h4>Batch mode:</h4>
 
 ```
-main.py --dir path/to/images/
+hdr-gainmap --dir path/to/images/
 ```
 
 File naming convention type:
@@ -76,7 +75,7 @@ image.avif
 Combine SDR image and SDR underexposed image (with EV value)
 
 ```
-main.py --sdr input_sdr.jpg --sdrev input_sdr_2ev.avif --ev 2 -o output_uhdr_2.jpg
+hdr-gainmap --sdr input_sdr.jpg --sdrev input_sdr_2ev.avif --ev 2 -o output_uhdr_2.jpg
 ```
 
 <table>
@@ -99,7 +98,7 @@ main.py --sdr input_sdr.jpg --sdrev input_sdr_2ev.avif --ev 2 -o output_uhdr_2.j
 Increase brighter part of SDR image to create a HDR version
 
 ```
-main.py --sdr input_sdr.jpg --ev 2 -o output_uhdr_4.jpg
+hdr-gainmap --sdr input_sdr.jpg --ev 2 -o output_uhdr_4.jpg
 ```
 
 <table>
@@ -120,7 +119,7 @@ main.py --sdr input_sdr.jpg --ev 2 -o output_uhdr_4.jpg
 Generate HDR from one SDR image with exposure compensation
 
 ```
-main.py --sdr input_sdr_2ev.jpg --ev 2 -o output_uhdr_3.jpg
+hdr-gainmap --sdr input_sdr_2ev.jpg --ev 2 -o output_uhdr_3.jpg
 ```
 
 <table>
