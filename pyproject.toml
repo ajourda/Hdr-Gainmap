@@ -19,6 +19,11 @@ dependencies = [
     "flask"
 ]
 
+[dependency-groups]
+dev = [
+    "ruff"
+]
+
 [project.scripts]
 hdr-gainmap = "hdr_gainmap.main:run"
 hdr-gainmap-web = "web.app:run"
