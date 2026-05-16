@@ -6,7 +6,6 @@ from hdr_gainmap.hdrgm.hdrgm import create_hdrgm
 
 
 class SdrSdrEvToUhdr:
-
     def __init__(
         self,
         sdr_path: str,
@@ -129,4 +128,4 @@ class SdrSdrEvToUhdr:
         if not os.path.isfile(self.sdr_ev_path):
             raise FileNotFoundError(f"Sdr ev image not found: {self.sdr_ev_path}")
         if not (-5 <= self.ev <= 5):
-            raise ValueError(f"EV value must be in [-5,5]")
+            raise ValueError("EV value must be in [-5,5]")

@@ -3,11 +3,10 @@ from flask import Flask, render_template, request, send_file, jsonify
 from werkzeug.utils import secure_filename
 import uuid
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 from hdr_gainmap.main import run_sdr_hdr
 from hdr_gainmap.preset import Preset
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 

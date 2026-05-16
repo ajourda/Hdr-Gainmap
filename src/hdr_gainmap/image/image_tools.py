@@ -66,8 +66,10 @@ def open_hdr_avif_image(
     try:
         import pillow_heif
     except ImportError:
-        print("⚠️ To open Avif files, please install pillow-heif -> \
-            'python -m pip install pillow-heif'")
+        print(
+            "⚠️ To open Avif files, please install pillow-heif -> \
+            'python -m pip install pillow-heif'"
+        )
         return
 
     if not os.path.isfile(image_path):
@@ -107,11 +109,10 @@ def get_rgb_colourspace_from_icc_profile(
         colour.RGB_Colourspace: Detected colourspace or sRGB fallback.
     """
     icc_in = image.info.get("icc_profile")
-    profileData = None
     try:
         f = BytesIO(icc_in)
         profileData = ImageCms.ImageCmsProfile(f)
-    except:
+    except ValueError:
         print("⚠️ Color profile not found: sRGB used")
         return colour.RGB_COLOURSPACES["sRGB"]
 

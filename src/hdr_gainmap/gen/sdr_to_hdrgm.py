@@ -6,7 +6,6 @@ from hdr_gainmap.hdrgm.hdrgm import create_hdrgm
 
 
 class SdrTmToHdrgm:
-
     def __init__(
         self,
         sdr_path: str,
