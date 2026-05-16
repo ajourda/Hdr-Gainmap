@@ -96,7 +96,12 @@ def run_sdr_tm(
     process.run()
 
 
-def run_dir(dir, preset=Preset.default, tag=False, keep_temp_files=False):
+def run_dir(
+    dir: str,
+    preset: Preset = Preset.default,
+    tag: bool = False,
+    keep_temp_files: bool = False,
+):
     print(f"Batch mode (sdr + hdr) on directory: {dir}")
     from gen import sdr_hdr_to_uhdr
 

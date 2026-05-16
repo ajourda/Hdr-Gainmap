@@ -50,7 +50,7 @@ def get_gainmap(
     sdr_np_image_linear: np.ndarray,
     hdr_np_image_linear: np.ndarray,
     hdrgm_settings: HdrgmSettings,
-) -> np.ndarray:
+) -> tuple[np.ndarray, float, float]:
     """
     Compute gain map from SDR and HDR linear images.
 

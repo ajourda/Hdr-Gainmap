@@ -48,9 +48,9 @@ def index():
         preset_enum = Preset[preset]
 
         run_sdr_hdr(
-            sdr=sdr_path,
-            hdr=hdr_path,
-            output=output_path,
+            sdr_path=sdr_path,
+            hdr_path=hdr_path,
+            output_path=output_path,
             preset=preset_enum,
             tag=tag,
             keep_temp_files=False,

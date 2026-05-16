@@ -9,3 +9,4 @@ dist/
 *.pyd
 *.spec
 *.DS_Store
+uploads/
