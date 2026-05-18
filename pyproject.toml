@@ -26,7 +26,7 @@ dev = [
 
 [project.scripts]
 hdr-gainmap = "hdr_gainmap.main:run"
-hdr-gainmap-web = "web.app:run"
+hdr-gainmap-web = "hdr_gainmap.web.app:run"
 
 [tool.ruff]
 src = ["src"]
