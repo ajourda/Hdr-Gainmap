@@ -44,14 +44,14 @@ hdr-gainmap --sdr input_sdr.jpg --hdr input_hdr.avif -o output_uhdr_1.jpg
 
 <table>
   <tr>
-    <td><b>SDR image</b></br><small>input_sdr.jpg</small></td>
-    <td><b>HDR image</b></br><small>input_hdr.avif</small></td>
-    <td><b>HDR image with gain map</b></br><small>output_uhdr_1.jpg</small></td>
+    <td><b>SDR image</b><br><small>input_sdr.jpg</small></td>
+    <td><b>HDR image</b><br><small>input_hdr.avif</small></td>
+    <td><b>HDR image with gain map</b><br><small>output_uhdr_1.jpg</small></td>
   </tr>
   <tr>
-    <td><img src="samples/input_sdr.jpg" width="250"/></td>
-    <td><img src="samples/input_hdr.avif" width="250"/></td>
-    <td><img src="samples/output_uhdr_1.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/input_sdr.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/input_hdr.avif" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/output_uhdr_1.jpg" width="250"/></td>
   </tr>
 </table>
 
@@ -80,14 +80,14 @@ hdr-gainmap --sdr input_sdr.jpg --sdrev input_sdr_2ev.avif --ev 2 -o output_uhdr
 
 <table>
   <tr>
-    <td><b>SDR image</b></br><small>input_sdr.jpg</small></td>
-    <td><b>SDR image - 2EV</b></br><small>input_sdr_2ev.avif</small></td>
-    <td><b>HDR image with gain map</b></br><small>output_uhdr_2.jpg</small></td>
+    <td><b>SDR image</b><br><small>input_sdr.jpg</small></td>
+    <td><b>SDR image - 2EV</b><br><small>input_sdr_2ev.avif</small></td>
+    <td><b>HDR image with gain map</b><br><small>output_uhdr_2.jpg</small></td>
   </tr>
   <tr>
-    <td><img src="samples/input_sdr.jpg" width="250"/></td>
-    <td><img src="samples/input_sdr_2ev.jpg" width="250"/></td>
-    <td><img src="samples/output_uhdr_2.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/input_sdr.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/input_sdr_2ev.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/output_uhdr_2.jpg" width="250"/></td>
   </tr>
 </table>
 
@@ -103,12 +103,12 @@ hdr-gainmap --sdr input_sdr.jpg --ev 2 -o output_uhdr_4.jpg
 
 <table>
   <tr>
-    <td><b>SDR image</b></br><small>input_sdr.jpg</small></td>
-    <td><b>HDR image with gain map</b></br><small>output_uhdr_4.jpg</small></td>
+    <td><b>SDR image</b><br><small>input_sdr.jpg</small></td>
+    <td><b>HDR image with gain map</b><br><small>output_uhdr_4.jpg</small></td>
   </tr>
   <tr>
-    <td><img src="samples/input_sdr.jpg" width="250"/></td>
-    <td><img src="samples/output_uhdr_4.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/input_sdr.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/output_uhdr_4.jpg" width="250"/></td>
   </tr>
 </table>
 
@@ -124,12 +124,12 @@ hdr-gainmap --sdr input_sdr_2ev.jpg --ev 2 -o output_uhdr_3.jpg
 
 <table>
   <tr>
-    <td><b>SDR image</b></br><small>input_sdr_2ev.jpg</small></td>
-    <td><b>HDR image with gain map</b></br><small>output_uhdr_3.jpg</small></td>
+    <td><b>SDR image</b><br><small>input_sdr_2ev.jpg</small></td>
+    <td><b>HDR image with gain map</b><br><small>output_uhdr_3.jpg</small></td>
   </tr>
   <tr>
-    <td><img src="samples/input_sdr_2ev.jpg" width="250"/></td>
-    <td><img src="samples/output_uhdr_3.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/input_sdr_2ev.jpg" width="250"/></td>
+    <td><img src="https://raw.githubusercontent.com/jb-jrdn/Hdr-Gainmap/master/samples/output_uhdr_3.jpg" width="250"/></td>
   </tr>
 </table>
 

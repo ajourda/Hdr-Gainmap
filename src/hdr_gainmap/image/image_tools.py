@@ -1,4 +1,6 @@
 import os
+from importlib.resources import files, as_file
+
 import numpy as np
 from PIL import Image, ImageCms, ImageDraw, ImageFont
 from io import BytesIO
@@ -36,10 +38,10 @@ CICP = {
     },
 }
 
-
+_icc_data_folder = files("hdr_gainmap.data.icc")
 ICC = {
-    "sRGB": r"data/icc/sRGB.icc",
-    "Display P3": r"data/icc/DisplayP3.icc",
+    "sRGB": _icc_data_folder / "sRGB.icc",
+    "Display P3": _icc_data_folder / "DisplayP3.icc",
 }
 
 
@@ -169,9 +171,10 @@ def save_sdr_image(
 
     if not icc_bytes:
         icc_path = ICC.get(rgb_profile.name)
-        if not icc_path or not os.path.isfile(icc_path):
+        if icc_path is None:
             raise FileNotFoundError(f"Icc profile {rgb_profile.name} not found")
-        icc_bytes = ImageCms.getOpenProfile(icc_path).tobytes()
+        with as_file(icc_path) as icc_file:
+            icc_bytes = ImageCms.getOpenProfile(str(icc_file)).tobytes()
 
     if exif_bytes:
         image.save(sdr_path, quality=quality, icc_profile=icc_bytes, exif=exif_bytes)
@@ -286,12 +289,14 @@ def add_hdr_tag(
 
         mask = Image.new("RGB", (temp_x_size, temp_y_size), (1, 1, 1))
         draw = ImageDraw.Draw(mask)
-        font = ImageFont.truetype("data/Rubik.ttf", 100)
 
-        if is_hdr:
-            grey_level = int(pow(2, font_ev))
-            font_color = (grey_level, grey_level, grey_level)
-            draw.text((25, 5), "HDR", fill=font_color, font=font)
+        with as_file(files("hdr_gainmap.data") / "Rubik.ttf") as font_file:
+            font = ImageFont.truetype(font_file, 100)
+
+            if is_hdr:
+                grey_level = int(pow(2, font_ev))
+                font_color = (grey_level, grey_level, grey_level)
+                draw.text((25, 5), "HDR", fill=font_color, font=font)
 
         tag_np_image = np.array(mask) * bk_y
         tag_np_image = cv2.resize(
