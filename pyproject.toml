@@ -17,8 +17,7 @@ dependencies = [
     "matplotlib",
     "typer",
     "flask",
-    "werkzeug",
-    "colour"
+    "werkzeug"
 ]
 
 [dependency-groups]
