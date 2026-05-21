@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from preset import Preset
+from hdr_gainmap.preset import Preset
 
 
 @dataclass

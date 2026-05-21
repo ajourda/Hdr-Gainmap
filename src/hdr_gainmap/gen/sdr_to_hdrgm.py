@@ -1,23 +1,20 @@
 import os
-from preset import Preset
-from image import image_tools
-from image.image_settings import IMAGE_SETTINGS
-from hdrgm.hdrgm import create_hdrgm
+from hdr_gainmap.preset import Preset
+from hdr_gainmap.image import image_tools
+from hdr_gainmap.image.image_settings import IMAGE_SETTINGS
+from hdr_gainmap.hdrgm.hdrgm import create_hdrgm
 
 
-class SdrToUhdr:
-
+class SdrTmToHdrgm:
     def __init__(
         self,
         sdr_path: str,
-        ev: float = 2.0,
         hdrgm_path: str | None = None,
         preset: str = Preset.default,
         tag: bool = False,
         keep_temp_files: bool = False,
     ) -> None:
         self.sdr_path = sdr_path
-        self.ev = ev
         self.hdrgm_path = hdrgm_path
         self.preset = preset
         self.settings = IMAGE_SETTINGS[preset]
@@ -55,10 +52,13 @@ class SdrToUhdr:
             rgb_profile=sdr_rgb_profile,
         )
 
-        # apply ev to create hdr
-        hdr_np_image_linear = sdr_np_image_linear * pow(2, self.ev)
+        # compute hdr with tone mapped sdr
+        hdr_np_image_linear = image_tools.tonemap_sdr_to_hdr(
+            sdr_np_image_linear=sdr_np_image_linear,
+            sdr_rgb_profile=sdr_rgb_profile,
+        )
 
-        # add hdr tag if asked
+        # add Hdr tag if asked
         if self.tag:
             image_tools.add_hdr_tag(
                 sdr_np_image_linear=sdr_np_image_linear,
@@ -97,5 +97,3 @@ class SdrToUhdr:
     def validate(self) -> None:
         if not os.path.isfile(self.sdr_path):
             raise FileNotFoundError(f"Sdr image not found: {self.sdr_path}")
-        if not (-5 <= self.ev <= 5):
-            raise ValueError(f"EV value must be in [-5,5]")

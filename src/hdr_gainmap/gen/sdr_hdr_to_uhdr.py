@@ -1,12 +1,11 @@
 import os
-from preset import Preset
-from image import image_tools
-from image.image_settings import IMAGE_SETTINGS
-from hdrgm.hdrgm import create_hdrgm
+from hdr_gainmap.preset import Preset
+from hdr_gainmap.image import image_tools
+from hdr_gainmap.image.image_settings import IMAGE_SETTINGS
+from hdr_gainmap.hdrgm.hdrgm import create_hdrgm
 
 
 class SdrHdrToUhdr:
-
     def __init__(
         self,
         sdr_path: str,

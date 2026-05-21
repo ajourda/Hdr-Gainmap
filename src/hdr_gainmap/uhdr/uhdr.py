@@ -2,14 +2,13 @@ import os
 import subprocess
 import numpy as np
 import cv2
-from uhdr.uhdr_metadata import UhdrMetadata
-from uhdr.uhdr_settings import UhdrSettings
+from hdr_gainmap.uhdr.uhdr_metadata import UhdrMetadata
+from hdr_gainmap.uhdr.uhdr_settings import UhdrSettings
 
 ULTRAHDR_APP = r"ultrahdr_app"
 
 
 class UltraHdr:
-
     def __init__(
         self,
         linear_sdr_image: np.ndarray,

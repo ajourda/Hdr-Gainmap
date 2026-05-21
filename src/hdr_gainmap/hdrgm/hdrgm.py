@@ -4,8 +4,8 @@ import colour
 import cv2
 from hdrconv.core import GainmapMetadata, GainmapImage
 from hdrconv.io import write_21496
-from preset import Preset
-from hdrgm.hdrgm_settings import HdrgmSettings, HDRGM_SETTINGS
+from hdr_gainmap.preset import Preset
+from hdr_gainmap.hdrgm.hdrgm_settings import HdrgmSettings, HDRGM_SETTINGS
 
 DEFAULT_OFFSET = 1 / 64
 DEFAULT_GAMMA = 1.0

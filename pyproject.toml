@@ -1,0 +1,39 @@
+[project]
+name = "hdr-gainmap"
+version = "0.1.0"
+description = "Generate HDR images (jpeg + Gain Map) optimized for SDR and HDR displays."
+readme = "readme.md"
+authors = [
+    { name = "Jb Jourdain", email = "jbjourdain@dxomark.com" }
+]
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "numpy",
+    "pillow",
+    "pillow_heif==0.22.0",
+    "opencv-python-headless",
+    "hdr-conversion",
+    "colour-science",
+    "typer",
+    "flask",
+    "werkzeug"
+]
+
+[dependency-groups]
+dev = [
+    "ruff"
+]
+
+[project.scripts]
+hdr-gainmap = "hdr_gainmap.main:run"
+hdr-gainmap-web = "hdr_gainmap.web.app:run"
+
+[tool.ruff]
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12.0"]
+build-backend = "uv_build"

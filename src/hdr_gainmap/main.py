@@ -1,5 +1,5 @@
 import typer
-from preset import Preset
+from hdr_gainmap.preset import Preset
 
 app = typer.Typer(
     add_completion=False,
@@ -16,7 +16,7 @@ def run_sdr_hdr(
     tag: bool = False,
     keep_temp_files: bool = False,
 ):
-    from gen.sdr_hdr_to_uhdr import SdrHdrToUhdr
+    from hdr_gainmap.gen.sdr_hdr_to_uhdr import SdrHdrToUhdr
 
     process = SdrHdrToUhdr(
         sdr_path=sdr_path,
@@ -39,7 +39,7 @@ def run_sdr_sdr_ev(
     tag: bool = False,
     keep_temp_files: bool = False,
 ):
-    from gen.sdr_sdr_ev_to_uhdr import SdrSdrEvToUhdr
+    from hdr_gainmap.gen.sdr_sdr_ev_to_uhdr import SdrSdrEvToUhdr
 
     process = SdrSdrEvToUhdr(
         sdr_path=sdr_path,
@@ -62,7 +62,7 @@ def run_sdr_ev(
     tag: bool = False,
     keep_temp_files: bool = False,
 ):
-    from gen.sdr_ev_to_uhdr import SdrToUhdr
+    from hdr_gainmap.gen.sdr_ev_to_uhdr import SdrToUhdr
 
     process = SdrToUhdr(
         sdr_path=sdr_path,
@@ -83,7 +83,7 @@ def run_sdr_tm(
     tag: bool = False,
     keep_temp_files: bool = False,
 ):
-    from gen.sdr_to_hdrgm import SdrTmToHdrgm
+    from hdr_gainmap.gen.sdr_to_hdrgm import SdrTmToHdrgm
 
     process = SdrTmToHdrgm(
         sdr_path=sdr_path,
@@ -103,7 +103,7 @@ def run_dir(
     keep_temp_files: bool = False,
 ):
     print(f"Batch mode (sdr + hdr) on directory: {dir}")
-    from gen import sdr_hdr_to_uhdr
+    from hdr_gainmap.gen import sdr_hdr_to_uhdr
 
     sdr_hdr_to_uhdr.process_folder(
         input_directory=dir,
@@ -181,7 +181,7 @@ def main(
     )
 
 
-if __name__ == "__main__":
+def run() -> None:
     import sys
 
     if len(sys.argv) == 1:
