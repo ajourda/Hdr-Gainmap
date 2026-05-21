@@ -14,7 +14,6 @@ dependencies = [
     "opencv-python-headless",
     "hdr-conversion",
     "colour-science",
-    "matplotlib",
     "typer",
     "flask",
     "werkzeug"
