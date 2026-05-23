@@ -1,10 +1,11 @@
+from typing import Annotated
+
 import typer
 from hdr_gainmap.preset import Preset
 
 app = typer.Typer(
     add_completion=False,
-    help="Convert SDR + HDR images to HDR with Gain Map (UltraHDR)",
-    no_args_is_help=True,
+    help="Convert SDR + HDR images to HDR with Gain Map (UltraHDR)"
 )
 
 
@@ -97,42 +98,60 @@ def run_sdr_tm(
 
 
 def run_dir(
-    dir: str,
+    directory: str,
     preset: Preset = Preset.default,
     tag: bool = False,
     keep_temp_files: bool = False,
 ):
-    print(f"Batch mode (sdr + hdr) on directory: {dir}")
+    print(f"Batch mode (sdr + hdr) on directory: {directory}")
     from hdr_gainmap.gen import sdr_hdr_to_uhdr
 
     sdr_hdr_to_uhdr.process_folder(
-        input_directory=dir,
+        input_directory=directory,
         keep_temp_files=keep_temp_files,
     )
 
 
 @app.command()
 def main(
-    sdr: str = typer.Option(None, "--sdr", "-s", help="Path to sdr image (.jpg)"),
-    hdr: str = typer.Option(None, "--hdr", "-H", help="Path to hdr image (.avif)"),
-    sdrev: str = typer.Option(
-        None, "--sdrev", "-se", help="Path to sdr image with ev (.jpg)"
-    ),
-    ev: float = typer.Option(None, "--ev", "-e", help="EV value (ex: 2)", min=0, max=4),
-    output: str = typer.Option(
-        None, "--output", "-o", help="Path to output image (.jpg)"
-    ),
-    preset: Preset = typer.Option(
-        Preset.default, "--preset", "-p", help="Preset for process"
-    ),
-    tag: bool = typer.Option(False, "--tag", "-t", help="Add hdr tag on image"),
-    keep_temp_files: bool = typer.Option(
-        False, "--keep-temp-files", "-k", help="Keep gain map and metadata"
-    ),
-    dir: str = typer.Option(
-        None, "--dir", "-d", help="Dir path to process (sdr + hdr)"
-    ),
-):
+    sdr: Annotated[
+        str | None,
+        typer.Option("--sdr", "-s", help="Path to sdr image (.jpg)"),
+    ] = None,
+    hdr: Annotated[
+        str | None,
+        typer.Option("--hdr", "-H", help="Path to hdr image (.avif)"),
+    ] = None,
+    sdrev: Annotated[
+        str | None,
+        typer.Option("--sdrev", "-S", help="Path to sdr image with ev (.jpg)"),
+    ] = None,
+    ev: Annotated[
+        float | None,
+        typer.Option("--ev", "-e", help="EV value (ex: 2)", min=0, max=4),
+    ] = None,
+    output: Annotated[
+        str | None,
+        typer.Option("--output", "-o", help="Path to output image (.jpg)"),
+    ] = None,
+    preset: Annotated[
+        Preset,
+        typer.Option("--preset", "-p", help="Preset for process"),
+    ] = Preset.default,
+    *,
+    tag: Annotated[
+        bool,
+        typer.Option("--tag", "-t", help="Add hdr tag on image"),
+    ] = False,
+    keep_temp_files: Annotated[
+        bool,
+        typer.Option("--keep-temp-files", "-k", help="Keep gain map and metadata"),
+    ] = False,
+    directory: Annotated[
+        str | None,
+        typer.Option("--dir", "-d", help="Dir path to process (sdr + hdr)"),
+    ] = None,
+) -> None:
     """
     Convert SDR/HDR images to Ultra HDR (Gain Map).
 
@@ -166,8 +185,8 @@ def main(
         return
 
     # Batch mode
-    if dir:
-        run_dir(dir, preset, tag, keep_temp_files)
+    if directory:
+        run_dir(directory, preset, tag, keep_temp_files)
         return
 
     # else
