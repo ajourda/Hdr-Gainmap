@@ -146,7 +146,7 @@ def create_hdrgm(
     sdr_rgb_profile: colour.RGB_Colourspace,
     sdr_icc_bytes: bytes,
     output_path: str,
-    preset: str = Preset.default,
+    preset: Preset = Preset.default,
     keep_temp_files: bool = False,
 ) -> None:
     """

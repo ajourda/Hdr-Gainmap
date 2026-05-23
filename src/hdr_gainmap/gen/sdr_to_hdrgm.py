@@ -10,7 +10,7 @@ class SdrTmToHdrgm:
         self,
         sdr_path: str,
         hdrgm_path: str | None = None,
-        preset: str = Preset.default,
+        preset: Preset = Preset.default,
         tag: bool = False,
         keep_temp_files: bool = False,
     ) -> None:

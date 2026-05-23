@@ -1,8 +1,8 @@
-from enum import Enum
+from enum import StrEnum, auto
 
 
-class Preset(str, Enum):
-    default = "default"
-    best = "best"
-    light = "light"
-    insta = "insta"
+class Preset(StrEnum):
+    default = auto()
+    best = auto()
+    light = auto()
+    insta = auto()

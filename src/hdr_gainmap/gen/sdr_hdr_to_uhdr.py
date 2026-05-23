@@ -11,7 +11,7 @@ class SdrHdrToUhdr:
         sdr_path: str,
         hdr_path: str,
         hdrgm_path: str | None = None,
-        preset: str = Preset.default,
+        preset: Preset = Preset.default,
         tag: bool = False,
         keep_temp_files: bool = False,
     ) -> None:

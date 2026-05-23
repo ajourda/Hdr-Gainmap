@@ -19,7 +19,7 @@ def index():
     if request.method == "POST":
         sdr_file = request.files.get("sdr")
         hdr_file = request.files.get("hdr")
-        preset = request.form.get("preset", "default")
+        preset = request.form.get("preset", Preset.default)
         tag = request.form.get("tag") == "on"
 
         if not sdr_file or not hdr_file:
@@ -41,7 +41,7 @@ def index():
         output_filename = f"{name}_hdrgm_{unique_id}.jpg"
         output_path = os.path.join(app.config["UPLOAD_FOLDER"], output_filename)
 
-        preset_enum = Preset[preset]
+        preset_enum = Preset(preset)
 
         run_sdr_hdr(
             sdr_path=sdr_path,

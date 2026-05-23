@@ -12,7 +12,7 @@ class SdrSdrEvToUhdr:
         sdr_ev_path: str,
         ev: float = 2.0,
         hdrgm_path: str | None = None,
-        preset: str = Preset.default,
+        preset: Preset = Preset.default,
         tag: bool = False,
         keep_temp_files: bool = False,
     ) -> None:
