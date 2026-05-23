@@ -6,7 +6,7 @@ from hdr_gainmap.preset import Preset
 
 app = typer.Typer(
     add_completion=False,
-    help="Convert SDR + HDR images to HDR with Gain Map (UltraHDR)"
+    help="Convert SDR + HDR images to HDR with Gain Map (UltraHDR)",
 )
 
 

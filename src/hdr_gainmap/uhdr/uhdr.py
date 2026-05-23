@@ -10,6 +10,16 @@ ULTRAHDR_APP = r"ultrahdr_app"
 
 
 class UltraHdr:
+    _linear_sdr_image: np.ndarray
+    _linear_hdr_image: np.ndarray
+    _sdr_path: Path
+    _uhdr_path: Path
+    _settings: UhdrSettings
+    _metadata: UhdrMetadata
+    _keep_temp_files: bool
+    _gainmap_path: Path
+    _metadata_path: Path
+
     def __init__(
         self,
         linear_sdr_image: np.ndarray,
@@ -20,59 +30,62 @@ class UltraHdr:
         metadata: UhdrMetadata = UhdrMetadata(),
         keep_temp_files: bool = False,
     ):
-        self.linear_sdr_image = linear_sdr_image
-        self.linear_hdr_image = linear_hdr_image
-        self.sdr_path = input_sdr_path
-        self.uhdr_path = output_uhdr_path
-        self.settings = settings
-        self.metadata = metadata
-        self.keep_temp_files = keep_temp_files
-
-        self.gainmap_path = self.sdr_path.with_stem(self.sdr_path.stem + "_gainMap")
-        self.metadata_path = self.sdr_path.with_stem(self.sdr_path.stem + "_metadata").with_suffix("cfg")
-        if not self.uhdr_path:
-            self.uhdr_path = self.sdr_path.with_stem(self.sdr_path.stem + "_uhdr")
+        self._linear_sdr_image = linear_sdr_image
+        self._linear_hdr_image = linear_hdr_image
+        self._sdr_path = input_sdr_path
+        self._uhdr_path = (
+            self._sdr_path.with_stem(self._sdr_path.stem + "_uhdr")
+            if output_uhdr_path is None
+            else output_uhdr_path
+        )
+        self._settings = settings
+        self._metadata = metadata
+        self._keep_temp_files = keep_temp_files
+        self._gainmap_path = self._sdr_path.with_stem(self._sdr_path.stem + "_gainMap")
+        self._metadata_path = self._sdr_path.with_stem(
+            self._sdr_path.stem + "_metadata"
+        ).with_suffix("cfg")
 
     def run(self) -> None:
         # process gain map
         gainmap_np_image, min_map, max_map = UltraHdr.get_gainmap(
-            sdr_np_image_linear=self.linear_sdr_image,
-            hdr_np_image_linear=self.linear_hdr_image,
-            metadata=self.metadata,
-            min_gain=self.settings.min_gain,
-            max_gain=self.settings.max_gain,
+            sdr_np_image_linear=self._linear_sdr_image,
+            hdr_np_image_linear=self._linear_hdr_image,
+            metadata=self._metadata,
+            min_gain=self._settings.min_gain,
+            max_gain=self._settings.max_gain,
         )
 
         # save gain map
         UltraHdr.write_gainmap(
             gainmap=gainmap_np_image,
-            gainmap_path=self.gainmap_path,
-            quality=self.settings.gain_map_quality,
-            size_factor=self.settings.gain_map_size_factor,
+            gainmap_path=self._gainmap_path,
+            quality=self._settings.gain_map_quality,
+            size_factor=self._settings.gain_map_size_factor,
         )
 
         # create metadata file
-        self.metadata.min_content_boost = min_map
-        self.metadata.max_content_boost = max_map
-        if self.settings.forced_max_hdr_capacity:
-            self.metadata.max_hdr_capacity = self.settings.forced_max_hdr_capacity
+        self._metadata.min_content_boost = min_map
+        self._metadata.max_content_boost = max_map
+        if self._settings.forced_max_hdr_capacity:
+            self._metadata.max_hdr_capacity = self._settings.forced_max_hdr_capacity
         UltraHdr.create_metadata(
-            metadata=self.metadata,
-            metadata_path=self.metadata_path,
+            metadata=self._metadata,
+            metadata_path=self._metadata_path,
         )
 
         # create uhdr image with ultrahdr_app
         UltraHdr.create_uhdr_image_from_sdr_and_gainmap(
-            sdr_path=self.sdr_path,
-            gainmap_path=self.gainmap_path,
-            metadata_path=self.metadata_path,
-            output_uhdr_path=self.uhdr_path,
+            sdr_path=self._sdr_path,
+            gainmap_path=self._gainmap_path,
+            metadata_path=self._metadata_path,
+            output_uhdr_path=self._uhdr_path,
         )
 
         # delete temp files if needed
-        if not self.keep_temp_files:
-            self.gainmap_path.unlink()
-            self.metadata_path.unlink()
+        if not self._keep_temp_files:
+            self._gainmap_path.unlink()
+            self._metadata_path.unlink()
 
     @staticmethod
     def create_metadata(
@@ -307,7 +320,9 @@ class UltraHdr:
         if gainmap_path is None:
             gainmap_path = sdr_path.with_stem(sdr_path.stem + "_gainMap")
         if metadata_path is None:
-            metadata_path = sdr_path.with_stem(sdr_path.stem + "_metadata").with_suffix("cfg")
+            metadata_path = sdr_path.with_stem(sdr_path.stem + "_metadata").with_suffix(
+                "cfg"
+            )
 
         # process gain map
         gainmap_np_image, min_map, max_map = UltraHdr.get_gainmap(
