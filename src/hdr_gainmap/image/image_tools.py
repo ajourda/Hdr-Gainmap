@@ -58,7 +58,7 @@ def get_hdr_rgb_colourspace(
 
 def open_hdr_avif_image(
     image_path: str,
-) -> tuple[np.ndarray, colour.RGB_Colourspace]:
+) -> tuple[np.ndarray, colour.RGB_Colourspace] | None:
     """
     Return float np.ndarray image from avif file
     ----------
@@ -72,7 +72,7 @@ def open_hdr_avif_image(
             "⚠️ To open Avif files, please install pillow-heif -> \
             'python -m pip install pillow-heif'"
         )
-        return
+        return None
 
     if not os.path.isfile(image_path):
         raise FileNotFoundError(f"Image file not found: {image_path}")
@@ -81,7 +81,7 @@ def open_hdr_avif_image(
 
     if "16" not in image_pil.mode:
         print("Wrong hdr image format")
-        return
+        return None
 
     tcIn = image_pil.info.get("nclx_profile").get("transfer_characteristics")
     primIn = image_pil.info.get("nclx_profile").get("color_primaries")
@@ -138,8 +138,20 @@ def get_rgb_colourspace_from_icc_profile(
 
 def open_sdr_image(
     image_path: str,
-) -> tuple[np.ndarray, colour.RGB_Colourspace]:
+) -> tuple[np.ndarray, colour.RGB_Colourspace, bytes | None, bytes | None] | None:
+    """
+    Open an SDR image and return a tuple containing:
+    - the image as a numpy array (RGB, float, 0-1),
+    - the detected colourspace,
+    - the EXIF bytes (if present),
+    - the ICC profile bytes (if present).
 
+    Args:
+        image_path (str): Path to the SDR image.
+
+    Returns:
+        tuple: (np.ndarray, colour.RGB_Colourspace, exif bytes or None, icc_profile bytes or None)
+    """
     if not os.path.isfile(image_path):
         raise FileNotFoundError(f"Image file not found: {image_path}")
 
@@ -149,9 +161,24 @@ def open_sdr_image(
         return None
 
     colourspace = get_rgb_colourspace_from_icc_profile(image_pil)
-    image_np = np.array(image_pil) / 255
     exif = image_pil.info.get("exif")
     icc_profile = image_pil.info.get("icc_profile")
+
+    image_np = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+    if image_np is None:
+        print(f"Error: Could not open or decode the image at {image_path}")
+        return None
+
+    # Remove alpha channel if exists
+    if image_np.ndim == 3 and image_np.shape[2] == 4:
+        image_np = image_np[:, :, :3]
+
+    image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
+
+    if image_np.dtype == np.uint8:
+        image_np = image_np / (2**8 - 1)
+    elif image_np.dtype == np.uint16:
+        image_np = image_np / (2**16 - 1)
 
     return image_np, colourspace, exif, icc_profile
 
@@ -165,8 +192,7 @@ def save_sdr_image(
     icc_bytes: bytes | None = None,
 ) -> None:
     sdr_np_image = rgb_profile.cctf_encoding(sdr_np_image_linear)
-    sdr_np_image = (sdr_np_image * 255).astype(np.uint8)
-    sdr_np_image = np.clip(sdr_np_image, 0, 255)
+    sdr_np_image = np.clip(sdr_np_image * 255, 0, 255).astype(np.uint8)
     image = Image.fromarray(sdr_np_image, mode="RGB")
 
     if not icc_bytes:
