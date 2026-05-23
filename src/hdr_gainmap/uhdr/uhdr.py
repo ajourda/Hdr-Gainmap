@@ -1,5 +1,6 @@
-import os
 import subprocess
+from pathlib import Path
+
 import numpy as np
 import cv2
 from hdr_gainmap.uhdr.uhdr_metadata import UhdrMetadata
@@ -13,8 +14,8 @@ class UltraHdr:
         self,
         linear_sdr_image: np.ndarray,
         linear_hdr_image: np.ndarray,
-        input_sdr_path: str,
-        output_uhdr_path: str | None = None,
+        input_sdr_path: Path,
+        output_uhdr_path: Path | None = None,
         settings: UhdrSettings = UhdrSettings(),
         metadata: UhdrMetadata = UhdrMetadata(),
         keep_temp_files: bool = False,
@@ -27,11 +28,10 @@ class UltraHdr:
         self.metadata = metadata
         self.keep_temp_files = keep_temp_files
 
-        base_path, _ = os.path.splitext(self.sdr_path)
-        self.gainmap_path = f"{base_path}_gainMap.jpg"
-        self.metadata_path = f"{base_path}_metadata.cfg"
+        self.gainmap_path = self.sdr_path.with_stem(self.sdr_path.stem + "_gainMap")
+        self.metadata_path = self.sdr_path.with_stem(self.sdr_path.stem + "_metadata").with_suffix("cfg")
         if not self.uhdr_path:
-            self.uhdr_path = f"{base_path}_uhdr.jpg"
+            self.uhdr_path = self.sdr_path.with_stem(self.sdr_path.stem + "_uhdr")
 
     def run(self) -> None:
         # process gain map
@@ -71,12 +71,12 @@ class UltraHdr:
 
         # delete temp files if needed
         if not self.keep_temp_files:
-            os.remove(self.gainmap_path)
-            os.remove(self.metadata_path)
+            self.gainmap_path.unlink()
+            self.metadata_path.unlink()
 
     @staticmethod
     def create_metadata(
-        metadata_path: str,
+        metadata_path: Path,
         metadata: UhdrMetadata,
     ) -> None:
         """
@@ -110,7 +110,7 @@ class UltraHdr:
         content = "\n".join(content_lines)
 
         try:
-            with open(metadata_path, "w", encoding="utf-8") as file:
+            with metadata_path.open("w", encoding="utf-8") as file:
                 file.write(content)
         except IOError as e:
             raise IOError(f"Failed to write metadata file: {e}")
@@ -199,7 +199,7 @@ class UltraHdr:
     @staticmethod
     def write_gainmap(
         gainmap: np.ndarray,
-        gainmap_path: str,
+        gainmap_path: Path,
         quality: int = 90,
         size_factor: int = 1,
     ) -> None:
@@ -233,11 +233,11 @@ class UltraHdr:
 
     @staticmethod
     def create_uhdr_image_from_sdr_and_gainmap(
-        sdr_path: str,
-        gainmap_path: str,
-        metadata_path: str,
-        output_uhdr_path: str | None = None,
-    ) -> str:
+        sdr_path: Path,
+        gainmap_path: Path,
+        metadata_path: Path,
+        output_uhdr_path: Path | None = None,
+    ) -> Path:
         """
         Generates a UHDR image from an SDR image, gainmap, and metadata.
 
@@ -248,7 +248,7 @@ class UltraHdr:
             output_uhdr_path: Output path for the generated UHDR image. If None, a default path is constructed.
 
         Returns:
-            str: Path to the generated UHDR image.
+            Path: Path to the generated UHDR image.
 
         Raises:
             FileNotFoundError: If input files are not found.
@@ -257,14 +257,14 @@ class UltraHdr:
         """
 
         # checks
-        if not os.path.exists(sdr_path):
+        if not sdr_path.is_file():
             raise FileNotFoundError(f"SDR image not found: {sdr_path}")
-        if not os.path.exists(gainmap_path):
+        if not gainmap_path.is_file():
             raise FileNotFoundError(f"Gain map not found: {gainmap_path}")
-        if not os.path.exists(metadata_path):
+        if not metadata_path.is_file():
             raise FileNotFoundError(f"Metadata not found: {metadata_path}")
 
-        uhdr_path = output_uhdr_path or f"{os.path.splitext(sdr_path)[0]}_uhdr.jpg"
+        uhdr_path = output_uhdr_path or sdr_path.with_stem(sdr_path.stem + "_uhdr")
         command = [
             ULTRAHDR_APP,
             "-m",
@@ -295,20 +295,19 @@ class UltraHdr:
     def create_uhdr_image_from_sdr_and_hdr_data(
         sdr_np_image_linear: np.ndarray,
         hdr_np_image_linear: np.ndarray,
-        sdr_path: str,
+        sdr_path: Path,
         metadata: UhdrMetadata = UhdrMetadata(),
-        gainmap_path: str | None = None,
-        metadata_path: str | None = None,
-        output_uhdr_path: str | None = None,
+        gainmap_path: Path | None = None,
+        metadata_path: Path | None = None,
+        output_uhdr_path: Path | None = None,
         keep_temp_files: bool = False,
-    ) -> str:
-        base_path, _ = os.path.splitext(sdr_path)
+    ) -> Path:
         if output_uhdr_path is None:
-            output_uhdr_path = f"{base_path}_uhdr.jpg"
+            output_uhdr_path = sdr_path.with_stem(sdr_path.stem + "_uhdr")
         if gainmap_path is None:
-            gainmap_path = f"{base_path}_gainMap.jpg"
+            gainmap_path = sdr_path.with_stem(sdr_path.stem + "_gainMap")
         if metadata_path is None:
-            metadata_path = f"{base_path}_metadata.cfg"
+            metadata_path = sdr_path.with_stem(sdr_path.stem + "_metadata").with_suffix("cfg")
 
         # process gain map
         gainmap_np_image, min_map, max_map = UltraHdr.get_gainmap(
@@ -341,7 +340,7 @@ class UltraHdr:
 
         # delete temp files if needed
         if not keep_temp_files:
-            os.remove(gainmap_path)
-            os.remove(metadata_path)
+            gainmap_path.unlink()
+            metadata_path.unlink()
 
         return output_uhdr_path

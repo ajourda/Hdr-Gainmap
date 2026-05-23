@@ -1,4 +1,5 @@
-import os
+from pathlib import Path
+
 from flask import Flask, render_template, request, send_file, jsonify
 from werkzeug.utils import secure_filename
 import uuid
@@ -6,9 +7,9 @@ import uuid
 from hdr_gainmap.main import run_sdr_hdr
 from hdr_gainmap.preset import Preset
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+BASE_DIR = Path(__file__).parent
+UPLOAD_FOLDER = BASE_DIR / "uploads"
+UPLOAD_FOLDER.mkdir(exist_ok=True)
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -25,21 +26,19 @@ def index():
         if not sdr_file or not hdr_file:
             return "Missing files", 400
 
-        sdr_path = os.path.join(
-            app.config["UPLOAD_FOLDER"], secure_filename(sdr_file.filename)
-        )
-        hdr_path = os.path.join(
-            app.config["UPLOAD_FOLDER"], secure_filename(hdr_file.filename)
-        )
+        sdr_path = app.config["UPLOAD_FOLDER"] / secure_filename(sdr_file.filename)
+        hdr_path = app.config["UPLOAD_FOLDER"] / secure_filename(hdr_file.filename)
 
         sdr_file.save(sdr_path)
         hdr_file.save(hdr_path)
 
         unique_id = uuid.uuid4().hex[:8]
 
-        name, _ = os.path.splitext(sdr_file.filename)
-        output_filename = f"{name}_hdrgm_{unique_id}.jpg"
-        output_path = os.path.join(app.config["UPLOAD_FOLDER"], output_filename)
+        filename_path = Path(sdr_file.filename)
+        output_filename = filename_path.with_stem(
+            f"{filename_path.stem}_hdrgm_{unique_id}"
+        )
+        output_path = app.config["UPLOAD_FOLDER"] / output_filename
 
         preset_enum = Preset(preset)
 
@@ -59,7 +58,7 @@ def index():
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
-    return send_file(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    return send_file(app.config["UPLOAD_FOLDER"] / filename)
 
 
 def run() -> None:

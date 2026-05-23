@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -10,9 +11,9 @@ app = typer.Typer(
 
 
 def run_sdr_hdr(
-    sdr_path: str,
-    hdr_path: str,
-    output_path: str | None = None,
+    sdr_path: Path,
+    hdr_path: Path,
+    output_path: Path | None = None,
     preset: Preset = Preset.default,
     tag: bool = False,
     keep_temp_files: bool = False,
@@ -32,10 +33,10 @@ def run_sdr_hdr(
 
 
 def run_sdr_sdr_ev(
-    sdr_path: str,
-    sdrev_path: str,
+    sdr_path: Path,
+    sdrev_path: Path,
     ev: float,
-    output_path: str | None = None,
+    output_path: Path | None = None,
     preset: Preset = Preset.default,
     tag: bool = False,
     keep_temp_files: bool = False,
@@ -56,9 +57,9 @@ def run_sdr_sdr_ev(
 
 
 def run_sdr_ev(
-    sdr_path: str,
+    sdr_path: Path,
     ev: float,
-    output_path: str | None = None,
+    output_path: Path | None = None,
     preset: Preset = Preset.default,
     tag: bool = False,
     keep_temp_files: bool = False,
@@ -78,8 +79,8 @@ def run_sdr_ev(
 
 
 def run_sdr_tm(
-    sdr_path: str,
-    output_path: str | None = None,
+    sdr_path: Path,
+    output_path: Path | None = None,
     preset: Preset = Preset.default,
     tag: bool = False,
     keep_temp_files: bool = False,
@@ -98,7 +99,7 @@ def run_sdr_tm(
 
 
 def run_dir(
-    directory: str,
+    directory: Path,
     preset: Preset = Preset.default,
     tag: bool = False,
     keep_temp_files: bool = False,
@@ -115,15 +116,15 @@ def run_dir(
 @app.command()
 def main(
     sdr: Annotated[
-        str | None,
+        Path | None,
         typer.Option("--sdr", "-s", help="Path to sdr image (.jpg)"),
     ] = None,
     hdr: Annotated[
-        str | None,
+        Path | None,
         typer.Option("--hdr", "-H", help="Path to hdr image (.avif)"),
     ] = None,
     sdrev: Annotated[
-        str | None,
+        Path | None,
         typer.Option("--sdrev", "-S", help="Path to sdr image with ev (.jpg)"),
     ] = None,
     ev: Annotated[
@@ -131,7 +132,7 @@ def main(
         typer.Option("--ev", "-e", help="EV value (ex: 2)", min=0, max=4),
     ] = None,
     output: Annotated[
-        str | None,
+        Path | None,
         typer.Option("--output", "-o", help="Path to output image (.jpg)"),
     ] = None,
     preset: Annotated[
@@ -148,7 +149,7 @@ def main(
         typer.Option("--keep-temp-files", "-k", help="Keep gain map and metadata"),
     ] = False,
     directory: Annotated[
-        str | None,
+        Path | None,
         typer.Option("--dir", "-d", help="Dir path to process (sdr + hdr)"),
     ] = None,
 ) -> None:

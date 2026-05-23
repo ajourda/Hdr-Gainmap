@@ -1,4 +1,5 @@
-import os
+from pathlib import Path
+
 from hdr_gainmap.preset import Preset
 from hdr_gainmap.image import image_tools
 from hdr_gainmap.image.image_settings import IMAGE_SETTINGS
@@ -8,8 +9,8 @@ from hdr_gainmap.hdrgm.hdrgm import create_hdrgm
 class SdrTmToHdrgm:
     def __init__(
         self,
-        sdr_path: str,
-        hdrgm_path: str | None = None,
+        sdr_path: Path,
+        hdrgm_path: Path | None = None,
         preset: Preset = Preset.default,
         tag: bool = False,
         keep_temp_files: bool = False,
@@ -68,8 +69,7 @@ class SdrTmToHdrgm:
 
         # output path definition
         if not self.hdrgm_path:
-            base_path, _ = os.path.splitext(self.sdr_path)
-            self.hdrgm_path = f"{base_path}_hdrgm.jpg"
+            self.hdrgm_path = self.sdr_path.with_stem(self.sdr_path.stem + "_hdrgm")
 
         # create hdr gainmap
         create_hdrgm(
@@ -84,8 +84,7 @@ class SdrTmToHdrgm:
 
         # create temp file if asked
         if self.sdr_changed and self.keep_temp_files:
-            base_path, _ = os.path.splitext(self.sdr_path)
-            sdr_path = f"{base_path}_temp.jpg"
+            sdr_path = self.sdr_path.with_stem(self.sdr_path.stem + "_temp")
             image_tools.save_sdr_image(
                 sdr_np_image_linear=sdr_np_image_linear,
                 rgb_profile=sdr_rgb_profile,
@@ -95,5 +94,5 @@ class SdrTmToHdrgm:
             )
 
     def validate(self) -> None:
-        if not os.path.isfile(self.sdr_path):
+        if not self.sdr_path.is_file():
             raise FileNotFoundError(f"Sdr image not found: {self.sdr_path}")

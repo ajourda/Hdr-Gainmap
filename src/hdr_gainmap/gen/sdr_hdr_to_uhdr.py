@@ -1,4 +1,5 @@
-import os
+from pathlib import Path
+
 from hdr_gainmap.preset import Preset
 from hdr_gainmap.image import image_tools
 from hdr_gainmap.image.image_settings import IMAGE_SETTINGS
@@ -8,9 +9,9 @@ from hdr_gainmap.hdrgm.hdrgm import create_hdrgm
 class SdrHdrToUhdr:
     def __init__(
         self,
-        sdr_path: str,
-        hdr_path: str,
-        hdrgm_path: str | None = None,
+        sdr_path: Path,
+        hdr_path: Path,
+        hdrgm_path: Path | None = None,
         preset: Preset = Preset.default,
         tag: bool = False,
         keep_temp_files: bool = False,
@@ -92,8 +93,7 @@ class SdrHdrToUhdr:
 
         # output path definition
         if not self.hdrgm_path:
-            base_path, _ = os.path.splitext(self.sdr_path)
-            self.hdrgm_path = f"{base_path}_hdrgm.jpg"
+            self.hdrgm_path = self.sdr_path.with_stem(self.sdr_path.stem + "_hdrgm")
 
         # create hdr gainmap
         create_hdrgm(
@@ -108,8 +108,7 @@ class SdrHdrToUhdr:
 
         # create temp file if asked
         if self.sdr_changed and self.keep_temp_files:
-            base_path, _ = os.path.splitext(self.sdr_path)
-            sdr_path = f"{base_path}_temp.jpg"
+            sdr_path = self.sdr_path.with_stem(self.sdr_path.stem + "_temp")
             image_tools.save_sdr_image(
                 sdr_np_image_linear=sdr_np_image_linear,
                 rgb_profile=sdr_rgb_profile,
@@ -119,14 +118,14 @@ class SdrHdrToUhdr:
             )
 
     def validate(self) -> None:
-        if not os.path.isfile(self.sdr_path):
+        if not self.sdr_path.is_file():
             raise FileNotFoundError(f"Sdr image not found: {self.sdr_path}")
-        if not os.path.isfile(self.hdr_path):
+        if not self.hdr_path.is_file():
             raise FileNotFoundError(f"Hdr image file not found: {self.hdr_path}")
 
 
 def process_folder(
-    input_directory: str,
+    input_directory: Path,
     overwrite_existing: bool = False,
     keep_temp_files: bool = False,
 ) -> None:
@@ -138,33 +137,27 @@ def process_folder(
     Args:
         input_directory: Path to the directory containing JPG and AVIF files.
         overwrite_existing: If True, overwrites existing UHDR files. Defaults to False.
-        keep_temporary_files: If True, retains temporary files after processing. Defaults to False.
+        keep_temp_files: If True, retains temporary files after processing. Defaults to False.
 
     Raises:
         FileNotFoundError: If "input_directory" does not exist or is not a directory.
         ValueError: If no valid JPG/AVIF pairs are found in the directory.
     """
-    if not os.path.isdir(input_directory):
+    if not input_directory.is_dir():
         raise FileNotFoundError(f"Directory does not exist: {input_directory}")
 
-    file_list = os.listdir(input_directory)
-
-    for filename in file_list:
-        base_name, file_extension = os.path.splitext(filename)
-
-        uhdr_output_filepath = os.path.join(input_directory, f"{base_name}_uhdr.jpg")
-        if not overwrite_existing and os.path.isfile(uhdr_output_filepath):
+    for filename in input_directory.iterdir():
+        uhdr_output_filepath = filename.with_stem(filename.stem + "_uhdr")
+        if not overwrite_existing and uhdr_output_filepath.is_file():
             continue
 
-        if file_extension.lower() == ".jpg":
-            corresponding_avif_filepath = os.path.join(
-                input_directory, f"{base_name}.avif"
-            )
+        if filename.suffix.lower() == ".jpg":
+            corresponding_avif_filepath = filename.with_suffix("avif")
 
-            if os.path.isfile(corresponding_avif_filepath):
+            if corresponding_avif_filepath.is_file():
                 print(f"Processing file: {filename}")
                 process = SdrHdrToUhdr(
-                    sdr_path=os.path.join(input_directory, filename),
+                    sdr_path=filename,
                     hdr_path=corresponding_avif_filepath,
                     keep_temp_files=keep_temp_files,
                 )

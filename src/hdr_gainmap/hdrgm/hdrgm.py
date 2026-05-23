@@ -1,4 +1,5 @@
-import os
+from pathlib import Path
+
 import numpy as np
 import colour
 import cv2
@@ -145,7 +146,7 @@ def create_hdrgm(
     hdr_np_image_linear: np.ndarray,
     sdr_rgb_profile: colour.RGB_Colourspace,
     sdr_icc_bytes: bytes,
-    output_path: str,
+    output_path: Path,
     preset: Preset = Preset.default,
     keep_temp_files: bool = False,
 ) -> None:
@@ -193,7 +194,7 @@ def create_hdrgm(
 
     if keep_temp_files:
         cv2.imwrite(
-            os.path.splitext(output_path)[0] + "_gm.jpg",
+            output_path.with_stem(output_path.stem + "_gm"),
             cv2.cvtColor(gainmap, cv2.COLOR_RGB2BGR),
             [cv2.IMWRITE_JPEG_QUALITY, hdrgm_settings.gain_map_quality],
         )

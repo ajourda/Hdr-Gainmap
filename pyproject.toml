@@ -21,7 +21,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ruff"
+    "ruff",
+    "pytest",
+    "matplotlib"
 ]
 
 [project.scripts]
