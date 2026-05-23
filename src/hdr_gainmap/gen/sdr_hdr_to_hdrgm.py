@@ -88,6 +88,8 @@ class SdrHdrToHdrgm(BaseGen):
 
 def process_folder(
     input_directory: Path,
+    preset: Preset = Preset.default,
+    tag: bool = False,
     overwrite_existing: bool = False,
     keep_temp_files: bool = False,
 ) -> None:
@@ -98,6 +100,8 @@ def process_folder(
 
     Args:
         input_directory: Path to the directory containing JPG and AVIF files.
+        preset: Preset for process.
+        tag: Add hdr tag on image. Defaults to False.
         overwrite_existing: If True, overwrites existing UHDR files. Defaults to False.
         keep_temp_files: If True, retains temporary files after processing. Defaults to False.
 
@@ -121,6 +125,8 @@ def process_folder(
                 process = SdrHdrToHdrgm(
                     sdr_path=filename,
                     hdr_path=corresponding_avif_filepath,
+                    preset=preset,
+                    tag=tag,
                     keep_temp_files=keep_temp_files,
                 )
                 process.validate()
