@@ -3,16 +3,18 @@ from hdr_gainmap.image import image_tools
 import os
 
 
-class SdrTmToHdrgm(BaseGen):
+class SdrToHdrgm(BaseGen):
     def __init__(
         self,
         sdr_path: str,
+        ev: float = 2.0,
         hdrgm_path: str | None = None,
         preset: str = "default",
         tag: bool = False,
         keep_temp_files: bool = False,
     ) -> None:
         super().__init__(sdr_path, hdrgm_path, preset, tag, keep_temp_files)
+        self.ev = ev
 
     def _load_images(self) -> None:
         """Load SDR image."""
@@ -21,18 +23,16 @@ class SdrTmToHdrgm(BaseGen):
         )
 
     def _process_images(self) -> None:
-        """Get linear SDR image and apply tone mapping to create HDR."""
+        """Get linear SDR image and apply EV to create HDR."""
         self.sdr_np_image_linear = image_tools.get_linear_image(
             image=self.sdr_np_image,
             rgb_profile=self.sdr_rgb_profile,
         )
 
-        # compute hdr with tone mapped sdr
-        self.hdr_np_image_linear = image_tools.tonemap_sdr_to_hdr(
-            sdr_np_image_linear=self.sdr_np_image_linear,
-            sdr_rgb_profile=self.sdr_rgb_profile,
-        )
+        self.hdr_np_image_linear = self.sdr_np_image_linear * pow(2, self.ev)
 
     def validate(self) -> None:
         if not os.path.isfile(self.sdr_path):
             raise FileNotFoundError(f"Sdr image not found: {self.sdr_path}")
+        if not (-5 <= self.ev <= 5):
+            raise ValueError("EV value must be in [-5,5]")

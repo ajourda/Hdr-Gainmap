@@ -1,122 +1,79 @@
-import os
-from hdr_gainmap.preset import Preset
+from hdr_gainmap.gen.base_gen import BaseGen
 from hdr_gainmap.image import image_tools
-from hdr_gainmap.image.image_settings import IMAGE_SETTINGS
-from hdr_gainmap.hdrgm.hdrgm import create_hdrgm
+import os
 
 
-class SdrHdrToUhdr:
+class SdrHdrToHdrgm(BaseGen):
     def __init__(
         self,
         sdr_path: str,
         hdr_path: str,
         hdrgm_path: str | None = None,
-        preset: str = Preset.default,
+        preset: str = "default",
         tag: bool = False,
         keep_temp_files: bool = False,
     ) -> None:
-        self.sdr_path = sdr_path
+        super().__init__(sdr_path, hdrgm_path, preset, tag, keep_temp_files)
         self.hdr_path = hdr_path
-        self.hdrgm_path = hdrgm_path
-        self.preset = preset
-        self.settings = IMAGE_SETTINGS[preset]
-        self.tag = tag
-        self.keep_temp_files = keep_temp_files
-        self.sdr_changed = False
 
-    def run(self) -> None:
-        # load images
-        sdr_np_image, sdr_rgb_profile, sdr_exif_bytes, sdr_icc_bytes = (
+    def _load_images(self) -> None:
+        """Load SDR and HDR images."""
+        self.sdr_np_image, self.sdr_rgb_profile, self.sdr_exif_bytes, self.sdr_icc_bytes = (
             image_tools.open_sdr_image(self.sdr_path)
         )
-        hdr_np_image, hdr_rgb_profile = image_tools.open_hdr_avif_image(self.hdr_path)
+        self.hdr_np_image, self.hdr_rgb_profile = image_tools.open_hdr_avif_image(self.hdr_path)
 
         # check sizes consistency
-        if sdr_np_image.shape[:2] != hdr_np_image.shape[:2]:
-            raise ("Sdr and Hdr image sizes are not identical")
+        if self.sdr_np_image.shape[:2] != self.hdr_np_image.shape[:2]:
+            raise ValueError("Sdr and Hdr image sizes are not identical")
 
-        # crop to respect ratio if needed
+    def _apply_crop_and_resize(self) -> None:
+        """Apply cropping and resizing to both SDR and HDR images."""
         if self.settings.min_ratio_w_h or self.settings.max_ratio_w_h:
-            sdr_np_image = image_tools.crop_to_ratio(
-                img=sdr_np_image,
-                min_ratio=self.settings.min_ratio_w_h,
-                max_ratio=self.settings.max_ratio_w_h,
-            )
-            hdr_np_image = image_tools.crop_to_ratio(
-                img=hdr_np_image,
+            self.sdr_np_image = image_tools.crop_to_ratio(
+                img=self.sdr_np_image,
                 min_ratio=self.settings.min_ratio_w_h,
                 max_ratio=self.settings.max_ratio_w_h,
             )
             self.sdr_changed = True
+            self.hdr_np_image = image_tools.crop_to_ratio(
+                img=self.hdr_np_image,
+                min_ratio=self.settings.min_ratio_w_h,
+                max_ratio=self.settings.max_ratio_w_h,
+            )
 
-        # resize to respect max size if needed
         if self.settings.width_max or self.settings.height_max:
-            sdr_np_image = image_tools.resize_to_max(
-                img=sdr_np_image,
-                width_max=self.settings.width_max,
-                height_max=self.settings.height_max,
-            )
-            hdr_np_image = image_tools.resize_to_max(
-                img=hdr_np_image,
+            self.sdr_np_image = image_tools.resize_to_max(
+                img=self.sdr_np_image,
                 width_max=self.settings.width_max,
                 height_max=self.settings.height_max,
             )
             self.sdr_changed = True
+            self.hdr_np_image = image_tools.resize_to_max(
+                img=self.hdr_np_image,
+                width_max=self.settings.width_max,
+                height_max=self.settings.height_max,
+            )
 
-        # get rgb linear values
-        sdr_np_image_linear = image_tools.get_linear_image(
-            image=sdr_np_image,
-            rgb_profile=sdr_rgb_profile,
+    def _process_images(self) -> None:
+        """Get linear images and convert HDR to SDR primaries."""
+        self.sdr_np_image_linear = image_tools.get_linear_image(
+            image=self.sdr_np_image,
+            rgb_profile=self.sdr_rgb_profile,
         )
-        hdr_np_image_linear = image_tools.get_linear_image(
-            image=hdr_np_image,
-            rgb_profile=hdr_rgb_profile,
+        self.hdr_np_image_linear = image_tools.get_linear_image(
+            image=self.hdr_np_image,
+            rgb_profile=self.hdr_rgb_profile,
             is_hdr=True,
         )
 
         # convert hdr values to the sdr primaries
-        hdr_np_image_linear = image_tools.get_adapted_rgb_primaries(
-            image=hdr_np_image_linear,
-            origin_rgb_profile=hdr_rgb_profile,
-            new_rgb_profile=sdr_rgb_profile,
+        self.hdr_np_image_linear = image_tools.get_adapted_rgb_primaries(
+            image=self.hdr_np_image_linear,
+            origin_rgb_profile=self.hdr_rgb_profile,
+            new_rgb_profile=self.sdr_rgb_profile,
             is_hdr=True,
         )
-
-        # add hdr tag if asked
-        if self.tag:
-            image_tools.add_hdr_tag(
-                sdr_np_image_linear=sdr_np_image_linear,
-                hdr_np_image_linear=hdr_np_image_linear,
-            )
-            self.sdr_changed = True
-
-        # output path definition
-        if not self.hdrgm_path:
-            base_path, _ = os.path.splitext(self.sdr_path)
-            self.hdrgm_path = f"{base_path}_hdrgm.jpg"
-
-        # create hdr gainmap
-        create_hdrgm(
-            sdr_np_image_linear=sdr_np_image_linear,
-            hdr_np_image_linear=hdr_np_image_linear,
-            sdr_rgb_profile=sdr_rgb_profile,
-            sdr_icc_bytes=sdr_icc_bytes,
-            output_path=self.hdrgm_path,
-            preset=self.preset,
-            keep_temp_files=self.keep_temp_files,
-        )
-
-        # create temp file if asked
-        if self.sdr_changed and self.keep_temp_files:
-            base_path, _ = os.path.splitext(self.sdr_path)
-            sdr_path = f"{base_path}_temp.jpg"
-            image_tools.save_sdr_image(
-                sdr_np_image_linear=sdr_np_image_linear,
-                rgb_profile=sdr_rgb_profile,
-                sdr_path=sdr_path,
-                exif_bytes=sdr_exif_bytes,
-                icc_bytes=sdr_icc_bytes,
-            )
 
     def validate(self) -> None:
         if not os.path.isfile(self.sdr_path):
@@ -163,7 +120,7 @@ def process_folder(
 
             if os.path.isfile(corresponding_avif_filepath):
                 print(f"Processing file: {filename}")
-                process = SdrHdrToUhdr(
+                process = SdrHdrToHdrgm(
                     sdr_path=os.path.join(input_directory, filename),
                     hdr_path=corresponding_avif_filepath,
                     keep_temp_files=keep_temp_files,
