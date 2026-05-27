@@ -18,9 +18,9 @@ def run_sdr_hdr(
     tag: bool = False,
     keep_temp_files: bool = False,
 ):
-    from hdr_gainmap.gen.sdr_hdr_to_uhdr import SdrHdrToUhdr
+    from hdr_gainmap.gen.sdr_hdr_to_hdrgm import SdrHdrToHdrgm
 
-    process = SdrHdrToUhdr(
+    process = SdrHdrToHdrgm(
         sdr_path=sdr_path,
         hdr_path=hdr_path,
         hdrgm_path=output_path,
@@ -41,9 +41,9 @@ def run_sdr_sdr_ev(
     tag: bool = False,
     keep_temp_files: bool = False,
 ):
-    from hdr_gainmap.gen.sdr_sdr_ev_to_uhdr import SdrSdrEvToUhdr
+    from hdr_gainmap.gen.sdr_sdr_ev_to_hdrgm import SdrSdrEvToHdrgm
 
-    process = SdrSdrEvToUhdr(
+    process = SdrSdrEvToHdrgm(
         sdr_path=sdr_path,
         sdr_ev_path=sdrev_path,
         ev=ev,
@@ -64,9 +64,9 @@ def run_sdr_ev(
     tag: bool = False,
     keep_temp_files: bool = False,
 ):
-    from hdr_gainmap.gen.sdr_ev_to_uhdr import SdrToUhdr
+    from hdr_gainmap.gen.sdr_ev_to_hdrgm import SdrToHdrgm
 
-    process = SdrToUhdr(
+    process = SdrToHdrgm(
         sdr_path=sdr_path,
         ev=ev,
         hdrgm_path=output_path,
@@ -107,7 +107,7 @@ def run_dir(
     print(f"Batch mode (sdr + hdr) on directory: {directory}")
     from hdr_gainmap.gen import sdr_hdr_to_uhdr
 
-    sdr_hdr_to_uhdr.process_folder(
+    sdr_hdr_to_hdrgm.process_folder(
         input_directory=directory,
         keep_temp_files=keep_temp_files,
     )
