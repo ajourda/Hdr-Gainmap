@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import colour
+import numpy as np
+
 from hdr_gainmap.preset import Preset
 from hdr_gainmap.gen.base_gen import BaseGen
 from hdr_gainmap.image import image_tools
@@ -7,6 +10,8 @@ from hdr_gainmap.image import image_tools
 
 class SdrHdrToHdrgm(BaseGen):
     _hdr_path: Path
+    _hdr_np_image: np.ndarray
+    _hdr_rgb_profile: colour.RGB_Colourspace
 
     def __init__(
         self,
@@ -22,10 +27,15 @@ class SdrHdrToHdrgm(BaseGen):
 
     def _load_images(self) -> None:
         """Load SDR and HDR images."""
-        self._sdr_np_image, self._sdr_rgb_profile, self._sdr_exif_bytes, self._sdr_icc_bytes = (
-            image_tools.open_sdr_image(self._sdr_path)
+        (
+            self._sdr_np_image,
+            self._sdr_rgb_profile,
+            self._sdr_exif_bytes,
+            self._sdr_icc_bytes,
+        ) = image_tools.open_sdr_image(self._sdr_path)
+        self._hdr_np_image, self._hdr_rgb_profile = image_tools.open_hdr_avif_image(
+            self._hdr_path
         )
-        self._hdr_np_image, self._hdr_rgb_profile = image_tools.open_hdr_avif_image(self._hdr_path)
 
         # check sizes consistency
         if self._sdr_np_image.shape[:2] != self._hdr_np_image.shape[:2]:
@@ -33,13 +43,8 @@ class SdrHdrToHdrgm(BaseGen):
 
     def _apply_crop_and_resize(self) -> None:
         """Apply cropping and resizing to both SDR and HDR images."""
+        super()._apply_crop_and_resize()
         if self._settings.min_ratio_w_h or self._settings.max_ratio_w_h:
-            self._sdr_np_image = image_tools.crop_to_ratio(
-                img=self._sdr_np_image,
-                min_ratio=self._settings.min_ratio_w_h,
-                max_ratio=self._settings.max_ratio_w_h,
-            )
-            self._sdr_changed = True
             self._hdr_np_image = image_tools.crop_to_ratio(
                 img=self._hdr_np_image,
                 min_ratio=self._settings.min_ratio_w_h,
@@ -47,12 +52,6 @@ class SdrHdrToHdrgm(BaseGen):
             )
 
         if self._settings.width_max or self._settings.height_max:
-            self._sdr_np_image = image_tools.resize_to_max(
-                img=self._sdr_np_image,
-                width_max=self._settings.width_max,
-                height_max=self._settings.height_max,
-            )
-            self._sdr_changed = True
             self._hdr_np_image = image_tools.resize_to_max(
                 img=self._hdr_np_image,
                 width_max=self._settings.width_max,
@@ -80,8 +79,7 @@ class SdrHdrToHdrgm(BaseGen):
         )
 
     def validate(self) -> None:
-        if not self._sdr_path.is_file():
-            raise FileNotFoundError(f"Sdr image not found: {self._sdr_path}")
+        super().validate()
         if not self._hdr_path.is_file():
             raise FileNotFoundError(f"Hdr image file not found: {self._hdr_path}")
 
