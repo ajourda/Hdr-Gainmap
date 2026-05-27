@@ -16,7 +16,8 @@ dependencies = [
     "colour-science",
     "typer",
     "flask",
-    "werkzeug"
+    "werkzeug",
+    "gunicorn"
 ]
 
 [dependency-groups]
