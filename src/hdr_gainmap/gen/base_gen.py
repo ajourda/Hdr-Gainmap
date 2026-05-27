@@ -1,29 +1,41 @@
-import os
+from pathlib import Path
 from abc import ABC, abstractmethod
+
 from hdr_gainmap.preset import Preset
 from hdr_gainmap.image import image_tools
-from hdr_gainmap.image.image_settings import IMAGE_SETTINGS
+from hdr_gainmap.image.image_settings import IMAGE_SETTINGS, ImageSettings
 from hdr_gainmap.hdrgm.hdrgm import create_hdrgm
 
 
 class BaseGen(ABC):
     """Abstract base class for hdr gainmap gen"""
+    _sdr_path: Path
+    _hdrgm_path: Path
+    _preset: Preset
+    _settings: ImageSettings
+    _tag: bool
+    _keep_temp_files: bool
+    _sdr_changed: bool
 
     def __init__(
         self,
-        sdr_path: str,
-        hdrgm_path: str | None = None,
-        preset: str = Preset.default,
+        sdr_path: Path,
+        hdrgm_path: Path | None = None,
+        preset: Preset = Preset.default,
         tag: bool = False,
         keep_temp_files: bool = False,
     ) -> None:
-        self.sdr_path = sdr_path
-        self.hdrgm_path = hdrgm_path
-        self.preset = preset
-        self.settings = IMAGE_SETTINGS[preset]
-        self.tag = tag
-        self.keep_temp_files = keep_temp_files
-        self.sdr_changed = False
+        self._sdr_path = sdr_path
+        self._hdrgm_path = (
+            self._sdr_path.with_stem(self._sdr_path.stem + "_hdrgm")
+            if hdrgm_path is None
+            else hdrgm_path
+        )
+        self._preset = Preset(preset)
+        self._settings = IMAGE_SETTINGS[preset]
+        self._tag = tag
+        self._keep_temp_files = keep_temp_files
+        self._sdr_changed = False
 
     def run(self) -> None:
         """Main execution pipeline."""
@@ -38,9 +50,6 @@ class BaseGen(ABC):
 
         # Add HDR tag if requested
         self._apply_hdr_tag()
-
-        # Define output path
-        self._set_output_path()
 
         # Generate gainmap
         self._create_gainmap()
@@ -62,63 +71,56 @@ class BaseGen(ABC):
         """Apply cropping and resizing based on settings."""
         # This will be overridden by subclasses that need custom logic
         # Default implementation for single SDR image
-        if not hasattr(self, 'sdr_np_image'):
+        if not hasattr(self, '_sdr_np_image'):
             return
 
-        if self.settings.min_ratio_w_h or self.settings.max_ratio_w_h:
-            self.sdr_np_image = image_tools.crop_to_ratio(
-                img=self.sdr_np_image,
-                min_ratio=self.settings.min_ratio_w_h,
-                max_ratio=self.settings.max_ratio_w_h,
+        if self._settings.min_ratio_w_h or self._settings.max_ratio_w_h:
+            self._sdr_np_image = image_tools.crop_to_ratio(
+                img=self._sdr_np_image,
+                min_ratio=self._settings.min_ratio_w_h,
+                max_ratio=self._settings.max_ratio_w_h,
             )
-            self.sdr_changed = True
+            self._sdr_changed = True
 
-        if self.settings.width_max or self.settings.height_max:
-            self.sdr_np_image = image_tools.resize_to_max(
-                img=self.sdr_np_image,
-                width_max=self.settings.width_max,
-                height_max=self.settings.height_max,
+        if self._settings.width_max or self._settings.height_max:
+            self._sdr_np_image = image_tools.resize_to_max(
+                img=self._sdr_np_image,
+                width_max=self._settings.width_max,
+                height_max=self._settings.height_max,
             )
-            self.sdr_changed = True
+            self._sdr_changed = True
 
     def _apply_hdr_tag(self) -> None:
         """Apply HDR tag if requested."""
-        if self.tag:
+        if self._tag:
             image_tools.add_hdr_tag(
-                sdr_np_image_linear=self.sdr_np_image_linear,
-                hdr_np_image_linear=self.hdr_np_image_linear,
+                sdr_np_image_linear=self._sdr_np_image_linear,
+                hdr_np_image_linear=self._hdr_np_image_linear,
             )
-            self.sdr_changed = True
-
-    def _set_output_path(self) -> None:
-        """Set output path for gainmap if not provided."""
-        if not self.hdrgm_path:
-            base_path, _ = os.path.splitext(self.sdr_path)
-            self.hdrgm_path = f"{base_path}_hdrgm.jpg"
+            self._sdr_changed = True
 
     def _create_gainmap(self) -> None:
         """Create the HDRGM image."""
         create_hdrgm(
-            sdr_np_image_linear=self.sdr_np_image_linear,
-            hdr_np_image_linear=self.hdr_np_image_linear,
-            sdr_rgb_profile=self.sdr_rgb_profile,
-            sdr_icc_bytes=self.sdr_icc_bytes,
-            output_path=self.hdrgm_path,
-            preset=self.preset,
-            keep_temp_files=self.keep_temp_files,
+            sdr_np_image_linear=self._sdr_np_image_linear,
+            hdr_np_image_linear=self._hdr_np_image_linear,
+            sdr_rgb_profile=self._sdr_rgb_profile,
+            sdr_icc_bytes=self._sdr_icc_bytes,
+            output_path=self._hdrgm_path,
+            preset=self._preset,
+            keep_temp_files=self._keep_temp_files,
         )
 
     def _save_temp_files(self) -> None:
         """Save temporary SDR file if requested."""
-        if self.sdr_changed and self.keep_temp_files:
-            base_path, _ = os.path.splitext(self.sdr_path)
-            sdr_path = f"{base_path}_temp.jpg"
+        if self._sdr_changed and self._keep_temp_files:
+            sdr_path = self._sdr_path.with_stem(self._sdr_path.stem + "_temp")
             image_tools.save_sdr_image(
-                sdr_np_image_linear=self.sdr_np_image_linear,
-                rgb_profile=self.sdr_rgb_profile,
+                sdr_np_image_linear=self._sdr_np_image_linear,
+                rgb_profile=self._sdr_rgb_profile,
                 sdr_path=sdr_path,
-                exif_bytes=self.sdr_exif_bytes,
-                icc_bytes=self.sdr_icc_bytes,
+                exif_bytes=self._sdr_exif_bytes,
+                icc_bytes=self._sdr_icc_bytes,
             )
 
     @abstractmethod

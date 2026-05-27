@@ -1,5 +1,5 @@
-import os
 from importlib.resources import files, as_file
+from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageCms, ImageDraw, ImageFont
@@ -57,7 +57,7 @@ def get_hdr_rgb_colourspace(
 
 
 def open_hdr_avif_image(
-    image_path: str,
+    image_path: Path,
 ) -> tuple[np.ndarray, colour.RGB_Colourspace] | None:
     """
     Return float np.ndarray image from avif file
@@ -74,7 +74,7 @@ def open_hdr_avif_image(
         )
         return None
 
-    if not os.path.isfile(image_path):
+    if not image_path.is_file():
         raise FileNotFoundError(f"Image file not found: {image_path}")
 
     image_pil = pillow_heif.open_heif(image_path, convert_hdr_to_8bit=False)
@@ -137,7 +137,7 @@ def get_rgb_colourspace_from_icc_profile(
 
 
 def open_sdr_image(
-    image_path: str,
+    image_path: Path,
 ) -> tuple[np.ndarray, colour.RGB_Colourspace, bytes | None, bytes | None] | None:
     """
     Open an SDR image and return a tuple containing:
@@ -147,12 +147,12 @@ def open_sdr_image(
     - the ICC profile bytes (if present).
 
     Args:
-        image_path (str): Path to the SDR image.
+        image_path (Path): Path to the SDR image.
 
     Returns:
         tuple: (np.ndarray, colour.RGB_Colourspace, exif bytes or None, icc_profile bytes or None)
     """
-    if not os.path.isfile(image_path):
+    if not image_path.is_file():
         raise FileNotFoundError(f"Image file not found: {image_path}")
 
     image_pil = Image.open(image_path)
@@ -186,7 +186,7 @@ def open_sdr_image(
 def save_sdr_image(
     sdr_np_image_linear: np.ndarray,
     rgb_profile: colour.RGB_Colourspace,
-    sdr_path: str,
+    sdr_path: Path,
     quality: int = 95,
     exif_bytes: bytes | None = None,
     icc_bytes: bytes | None = None,
