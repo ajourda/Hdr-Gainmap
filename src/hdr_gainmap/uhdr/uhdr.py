@@ -44,7 +44,7 @@ class UltraHdr:
         self._gainmap_path = self._sdr_path.with_stem(self._sdr_path.stem + "_gainMap")
         self._metadata_path = self._sdr_path.with_stem(
             self._sdr_path.stem + "_metadata"
-        ).with_suffix("cfg")
+        ).with_suffix(".cfg")
 
     def run(self) -> None:
         # process gain map
@@ -321,7 +321,7 @@ class UltraHdr:
             gainmap_path = sdr_path.with_stem(sdr_path.stem + "_gainMap")
         if metadata_path is None:
             metadata_path = sdr_path.with_stem(sdr_path.stem + "_metadata").with_suffix(
-                "cfg"
+                ".cfg"
             )
 
         # process gain map

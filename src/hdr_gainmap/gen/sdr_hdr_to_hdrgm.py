@@ -114,7 +114,7 @@ def process_folder(
             continue
 
         if filename.suffix.lower() == ".jpg":
-            corresponding_avif_filepath = filename.with_suffix("avif")
+            corresponding_avif_filepath = filename.with_suffix(".avif")
 
             if corresponding_avif_filepath.is_file():
                 print(f"Processing file: {filename}")
