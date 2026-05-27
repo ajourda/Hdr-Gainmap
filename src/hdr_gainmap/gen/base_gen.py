@@ -37,9 +37,7 @@ class BaseGen(ABC):
     ) -> None:
         self._sdr_path = sdr_path
         self._hdrgm_path = (
-            self._sdr_path.with_stem(self._sdr_path.stem + "_hdrgm")
-            if hdrgm_path is None
-            else hdrgm_path
+            self._sdr_path.with_stem(self._sdr_path.stem + "_hdrgm") if hdrgm_path is None else hdrgm_path
         )
         self._preset = Preset(preset)
         self._settings = IMAGE_SETTINGS[preset]

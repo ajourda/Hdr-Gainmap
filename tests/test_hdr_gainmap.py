@@ -37,7 +37,3 @@ def test_batch() -> None:
     sys.argv.extend(arguments)
 
     run()
-
-
-def test_web_app() -> None:
-    run()

@@ -33,9 +33,7 @@ class SdrHdrToHdrgm(BaseGen):
             self._sdr_exif_bytes,
             self._sdr_icc_bytes,
         ) = image_tools.open_sdr_image(self._sdr_path)
-        self._hdr_np_image, self._hdr_rgb_profile = image_tools.open_hdr_avif_image(
-            self._hdr_path
-        )
+        self._hdr_np_image, self._hdr_rgb_profile = image_tools.open_hdr_avif_image(self._hdr_path)
 
         # check sizes consistency
         if self._sdr_np_image.shape[:2] != self._hdr_np_image.shape[:2]:
